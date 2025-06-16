@@ -1,0 +1,1163 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FH Tech - Soluções Tecnológicas</title>
+    <meta name="description" content="FH Tech - Prestação de serviços em tecnologia, desenvolvimento web e mobile">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/header.css">
+    <link rel="stylesheet" href="src/styles/game.css">
+    <link rel="stylesheet" href="src/styles/sections.css">
+    <link rel="stylesheet" href="src/styles/responsive.css">
+    <script src="src/scripts/title-animation.js" defer></script>
+</head>
+<body>
+    <div class="background-animation" id="backgroundAnimation"></div>
+    
+    <header class="header">
+        <div class="logo">
+            <img src="public/logo.png" alt="FH Tech Logo" class="logo-img">
+            <span class="logo-text">FH.Tech</span>
+        </div>
+        
+        <nav class="nav">
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-sun theme-icon" id="themeIcon"></i>
+            </div>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="#home" onclick="closeMenu()">Início</a>
+            <a href="#services" onclick="closeMenu()">Serviços</a>
+            <a href="#about" onclick="closeMenu()">Sobre</a>
+            <a href="#contact" onclick="closeMenu()">Contato</a>
+            <a href="#" onclick="closeMenu(); openGame()">Mini Game</a>
+        </div>
+    </header>
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const span = (text, index) => {
+        const node = document.createElement("span");
+        node.textContent = text;
+        node.style.setProperty("--index", index);
+        return node;
+    };
+
+    const byLetter = (text) => [...text].map(span);
+
+    const { matches: motionOK } = window.matchMedia(
+        "(prefers-reduced-motion: no-preference)"
+    );
+
+    if (motionOK) {
+        const splitTargets = document.querySelectorAll("[split-by]");
+
+        splitTargets.forEach((node) => {
+            const type = node.getAttribute("split-by");
+            let nodes = null;
+
+            if (type === "letter") nodes = byLetter(node.innerText);
+
+            if (nodes) node.firstChild.replaceWith(...nodes);
+        });
+    }
+});
+
+</script>
+    <!--game-->
+    <div class="mini-game" id="miniGame">
+        <div class="game-header">
+            <h3>Space Defender</h3>
+            <button onclick="closeGame()" class="close-game">×</button>
+        </div>
+        <div class="game-content">
+            <div class="game-stats">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="lives">Lives: <span id="lives">3</span></div>
+            </div>
+            <canvas id="gameCanvas" width="260" height="200"></canvas>
+            <div class="game-controls">
+                <button onclick="startGame()" id="startBtn">Start Game</button>
+                <p>Use A/D or ← → to move, Space to shoot!</p>
+            </div>
+        </div>
+    </div>
+
+        <script>
+
+let gameScore = 0;
+let gameRunning = false;
+let gameCanvas, gameCtx;
+let player, bullets, enemies, gameLoop, enemySpawner;
+let keys = {};
+let lives = 3;
+
+const GAME_WIDTH = 260;
+const GAME_HEIGHT = 200;
+
+//objetos
+class Player {
+    constructor() {
+        this.x = GAME_WIDTH / 2 - 15;
+        this.y = GAME_HEIGHT - 30;
+        this.width = 30;
+        this.height = 20;
+        this.speed = 3;
+    }
+
+    update() {
+        if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+            this.x = Math.max(0, this.x - this.speed);
+        }
+        if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+            this.x = Math.min(GAME_WIDTH - this.width, this.x + this.speed);
+        }
+    }
+
+    draw() {
+        gameCtx.fillStyle = '#4095ff';
+        gameCtx.fillRect(this.x, this.y, this.width, this.height);
+        gameCtx.fillStyle = '#00d4ff';
+        gameCtx.fillRect(this.x + 5, this.y - 5, 20, 10);
+    }
+}
+
+class Bullet {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 4;
+        this.height = 10;
+        this.speed = 5;
+    }
+
+    update() {
+        this.y -= this.speed;
+    }
+
+    draw() {
+        gameCtx.fillStyle = '#ffff00';
+        gameCtx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+class Enemy {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 25;
+        this.height = 20;
+        this.speed = 1;
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+
+    draw() {
+        gameCtx.fillStyle = '#ff6b6b';
+        gameCtx.fillRect(this.x, this.y, this.width, this.height);
+        gameCtx.fillStyle = '#ff4757';
+        gameCtx.fillRect(this.x + 5, this.y + 5, 15, 10);
+    }
+}
+
+//inicia
+function initGame() {
+    gameCanvas = document.getElementById('gameCanvas');
+    if (!gameCanvas) return;
+    
+    gameCtx = gameCanvas.getContext('2d');
+    
+    player = new Player();
+    bullets = [];
+    enemies = [];
+    
+    document.addEventListener('keydown', (e) => {
+        keys[e.key] = true;
+        if (e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            if (gameRunning) {
+                bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
+            }
+        }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+        keys[e.key] = false;
+    });
+}
+
+function startGame() {
+    if (gameRunning) return;
+    
+    gameRunning = true;
+    gameScore = 0;
+    lives = 3;
+    bullets = [];
+    enemies = [];
+    
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.textContent = 'Game Running...';
+        startBtn.disabled = true;
+    }
+    
+    gameLoop = setInterval(updateGame, 1000/60); 
+    
+    //inimigos
+    enemySpawner = setInterval(() => {
+        if (gameRunning) {
+            const x = Math.random() * (GAME_WIDTH - 25);
+            enemies.push(new Enemy(x, -20));
+        }
+    }, 1500);
+}
+
+function updateGame() {
+    if (!gameCtx) return;
+    
+    gameCtx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+    player.update();
+    player.draw();
+    
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].update();
+        bullets[i].draw();
+        
+        if (bullets[i].y < 0) {
+            bullets.splice(i, 1);
+        }
+    }
+    
+    //atualiza
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        enemies[i].update();
+        enemies[i].draw();
+        
+        if (enemies[i].y > GAME_HEIGHT) {
+            enemies.splice(i, 1);
+            lives--;
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+    }
+    
+    // ve colisoes
+    checkCollisions();
+    
+    // atualiza interface
+    const scoreEl = document.getElementById('score');
+    const livesEl = document.getElementById('lives');
+    if (scoreEl) scoreEl.textContent = gameScore;
+    if (livesEl) livesEl.textContent = lives;
+}
+
+function checkCollisions() {
+    //bala-inimigo
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            if (bullets[i] && enemies[j] && 
+                bullets[i].x < enemies[j].x + enemies[j].width &&
+                bullets[i].x + bullets[i].width > enemies[j].x &&
+                bullets[i].y < enemies[j].y + enemies[j].height &&
+                bullets[i].y + bullets[i].height > enemies[j].y) {
+                
+                bullets.splice(i, 1);
+                enemies.splice(j, 1);
+                gameScore += 10;
+                break;
+            }
+        }
+    }
+    
+    //jogador-inimigo
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        if (enemies[i].x < player.x + player.width &&
+            enemies[i].x + enemies[i].width > player.x &&
+            enemies[i].y < player.y + player.height &&
+            enemies[i].y + enemies[i].height > player.y) {
+            
+            enemies.splice(i, 1);
+            lives--;
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+    }
+}
+
+function endGame() {
+    gameRunning = false;
+    
+    if (gameLoop) clearInterval(gameLoop);
+    if (enemySpawner) clearInterval(enemySpawner);
+    
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.textContent = 'Start Game';
+        startBtn.disabled = false;
+    }
+    
+    //game over
+    if (gameCtx) {
+        gameCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        gameCtx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        
+        gameCtx.fillStyle = '#ffffff';
+        gameCtx.font = '20px Inter';
+        gameCtx.textAlign = 'center';
+        gameCtx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
+        
+        gameCtx.font = '16px Inter';
+        gameCtx.fillText(`Score: ${gameScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10);
+    }
+}
+
+function openGame() {
+    const miniGame = document.getElementById('miniGame');
+    if (miniGame) {
+        miniGame.classList.add('active');
+        initGame();
+    }
+}
+
+function closeGame() {
+    const miniGame = document.getElementById('miniGame');
+    if (miniGame) {
+        miniGame.classList.remove('active');
+        if (gameRunning) {
+            endGame();
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title" split-by="letter" letter-animation="breath">FH.Tech</h1>
+                    <h2 class="hero-subtitle">
+                        <div class="text-animation-container">
+                            <span id="textPrefix" class="text-3xl font-bold text-blue-400">Somos&nbsp;</span>
+                            <span id="textHacker" class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"></span>
+                            <span class="text-3xl font-bold text-blue-400 cursor-blink">|</span>
+                        </div>
+                    </h2>
+                    <p class="hero-description">
+                        Transformando ideias em realidade digital com tecnologia de ponta
+                    </p>
+                    <div class="hero-buttons">
+                        <div class="voltage-button">
+                            <button type="button" onclick="window.location.href='#services'">Nossos Serviços</button>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 234.6 61.3" preserveAspectRatio="none" xml:space="preserve">
+                                <defs>
+                                    <filter id="glow">
+                                        <fegaussianblur class="blur" result="coloredBlur" stddeviation="2"></fegaussianblur>
+                                        <feTurbulence type="fractalNoise" baseFrequency="0.075" numOctaves="0.3" result="turbulence"></feTurbulence>
+                                        <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="30" xChannelSelector="R" yChannelSelector="G" result="displace"></feDisplacementMap>
+                                        <femerge>
+                                            <femergenode in="coloredBlur"></femergenode>
+                                            <femergenode in="coloredBlur"></femergenode>
+                                            <femergenode in="coloredBlur"></femergenode>
+                                            <femergenode in="displace"></femergenode>
+                                            <femergenode in="SourceGraphic"></femergenode>
+                                        </femerge>
+                                    </filter>
+                                </defs>
+                                <path class="voltage line-1" d="m216.3 51.2c-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 6.8-7.3 6.8-3.7 0-3.7-4.6-7.3-4.6-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-0.9-7.3-0.9-3.7 0-3.7-2.7-7.3-2.7-3.7 0-3.7 7.8-7.3 7.8-3.7 0-3.7-4.9-7.3-4.9-3.7 0-3.7-7.8-7.3-7.8-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 3.1-7.3 3.1-3.7 0-3.7 10.9-7.3 10.9-3.7 0-3.7-12.5-7.3-12.5-3.7 0-3.7 4.6-7.3 4.6-3.7 0-3.7 4.5-7.3 4.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-10-7.3-10-3.7 0-3.7-0.4-7.3-0.4-3.7 0-3.7 2.3-7.3 2.3-3.7 0-3.7 7.1-7.3 7.1-3.7 0-3.7-11.2-7.3-11.2-3.7 0-3.7 3.5-7.3 3.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-2.9-7.3-2.9-3.7 0-3.7 8.4-7.3 8.4-3.7 0-3.7-14.6-7.3-14.6-3.7 0-3.7 5.8-7.3 5.8-2.2 0-3.8-0.4-5.5-1.5-1.8-1.1-1.8-2.9-2.9-4.8-1-1.8 1.9-2.7 1.9-4.8 0-3.4-2.1-3.4-2.1-6.8s-9.9-3.4-9.9-6.8 8-3.4 8-6.8c0-2.2 2.1-2.4 3.1-4.2 1.1-1.8 0.2-3.9 2-5 1.8-1 3.1-7.9 5.3-7.9 3.7 0 3.7 0.9 7.3 0.9 3.7 0 3.7 6.7 7.3 6.7 3.7 0 3.7-1.8 7.3-1.8 3.7 0 3.7-0.6 7.3-0.6 3.7 0 3.7-7.8 7.3-7.8h7.3c3.7 0 3.7 4.7 7.3 4.7 3.7 0 3.7-1.1 7.3-1.1 3.7 0 3.7 11.6 7.3 11.6 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-12.9 7.3-12.9 3.7 0 3.7 10.9 7.3 10.9 3.7 0 3.7 1.3 7.3 1.3 3.7 0 3.7-8.7 7.3-8.7 3.7 0 3.7 11.5 7.3 11.5 3.7 0 3.7-1.4 7.3-1.4 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-5.8 7.3-5.8 3.7 0 3.7-1.3 7.3-1.3 3.7 0 3.7 6.6 7.3 6.6s3.7-9.3 7.3-9.3c3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7 8.5 7.3 8.5 3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7-1.5 7.3-1.5 3.7 0 3.7 1.6 7.3 1.6s3.7-5.1 7.3-5.1c2.2 0 0.6 9.6 2.4 10.7s4.1-2 5.1-0.1c1 1.8 10.3 2.2 10.3 4.3 0 3.4-10.7 3.4-10.7 6.8s1.2 3.4 1.2 6.8 1.9 3.4 1.9 6.8c0 2.2 7.2 7.7 6.2 9.5-1.1 1.8-12.3-6.5-14.1-5.5-1.7 0.9-0.1 6.2-2.2 6.2z" fill="transparent" stroke="#fff"/>
+                            </svg>
+                            <div class="dots">
+                                <div class="dot dot-1"></div>
+                                <div class="dot dot-2"></div>
+                                <div class="dot dot-3"></div>
+                                <div class="dot dot-4"></div>
+                                <div class="dot dot-5"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="voltage-button">
+                            <button type="button" onclick="window.location.href='#contact'">Fale Conosco</button>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 234.6 61.3" preserveAspectRatio="none" xml:space="preserve">
+                                <path class="voltage line-1" d="m216.3 51.2c-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 6.8-7.3 6.8-3.7 0-3.7-4.6-7.3-4.6-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-0.9-7.3-0.9-3.7 0-3.7-2.7-7.3-2.7-3.7 0-3.7 7.8-7.3 7.8-3.7 0-3.7-4.9-7.3-4.9-3.7 0-3.7-7.8-7.3-7.8-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 3.1-7.3 3.1-3.7 0-3.7 10.9-7.3 10.9-3.7 0-3.7-12.5-7.3-12.5-3.7 0-3.7 4.6-7.3 4.6-3.7 0-3.7 4.5-7.3 4.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-10-7.3-10-3.7 0-3.7-0.4-7.3-0.4-3.7 0-3.7 2.3-7.3 2.3-3.7 0-3.7 7.1-7.3 7.1-3.7 0-3.7-11.2-7.3-11.2-3.7 0-3.7 3.5-7.3 3.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-2.9-7.3-2.9-3.7 0-3.7 8.4-7.3 8.4-3.7 0-3.7-14.6-7.3-14.6-3.7 0-3.7 5.8-7.3 5.8-2.2 0-3.8-0.4-5.5-1.5-1.8-1.1-1.8-2.9-2.9-4.8-1-1.8 1.9-2.7 1.9-4.8 0-3.4-2.1-3.4-2.1-6.8s-9.9-3.4-9.9-6.8 8-3.4 8-6.8c0-2.2 2.1-2.4 3.1-4.2 1.1-1.8 0.2-3.9 2-5 1.8-1 3.1-7.9 5.3-7.9 3.7 0 3.7 0.9 7.3 0.9 3.7 0 3.7 6.7 7.3 6.7 3.7 0 3.7-1.8 7.3-1.8 3.7 0 3.7-0.6 7.3-0.6 3.7 0 3.7-7.8 7.3-7.8h7.3c3.7 0 3.7 4.7 7.3 4.7 3.7 0 3.7-1.1 7.3-1.1 3.7 0 3.7 11.6 7.3 11.6 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-12.9 7.3-12.9 3.7 0 3.7 10.9 7.3 10.9 3.7 0 3.7 1.3 7.3 1.3 3.7 0 3.7-8.7 7.3-8.7 3.7 0 3.7 11.5 7.3 11.5 3.7 0 3.7-1.4 7.3-1.4 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-5.8 7.3-5.8 3.7 0 3.7-1.3 7.3-1.3 3.7 0 3.7 6.6 7.3 6.6s3.7-9.3 7.3-9.3c3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7 8.5 7.3 8.5 3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7-1.5 7.3-1.5 3.7 0 3.7 1.6 7.3 1.6s3.7-5.1 7.3-5.1c2.2 0 0.6 9.6 2.4 10.7s4.1-2 5.1-0.1c1 1.8 10.3 2.2 10.3 4.3 0 3.4-10.7 3.4-10.7 6.8s1.2 3.4 1.2 6.8 1.9 3.4 1.9 6.8c0 2.2 7.2 7.7 6.2 9.5-1.1 1.8-12.3-6.5-14.1-5.5-1.7 0.9-0.1 6.2-2.2 6.2z" fill="transparent" stroke="#fff"/>
+                            </svg>
+                            <div class="dots">
+                                <div class="dot dot-1"></div>
+                                <div class="dot dot-2"></div>
+                                <div class="dot dot-3"></div>
+                                <div class="dot dot-4"></div>
+                                <div class="dot dot-5"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="voltage-button">
+                            <button type="button" onclick="openGame()">Mini Game</button>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 234.6 61.3" preserveAspectRatio="none" xml:space="preserve">
+                                <path class="voltage line-1" d="m216.3 51.2c-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 6.8-7.3 6.8-3.7 0-3.7-4.6-7.3-4.6-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-0.9-7.3-0.9-3.7 0-3.7-2.7-7.3-2.7-3.7 0-3.7 7.8-7.3 7.8-3.7 0-3.7-4.9-7.3-4.9-3.7 0-3.7-7.8-7.3-7.8-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 3.1-7.3 3.1-3.7 0-3.7 10.9-7.3 10.9-3.7 0-3.7-12.5-7.3-12.5-3.7 0-3.7 4.6-7.3 4.6-3.7 0-3.7 4.5-7.3 4.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-10-7.3-10-3.7 0-3.7-0.4-7.3-0.4-3.7 0-3.7 2.3-7.3 2.3-3.7 0-3.7 7.1-7.3 7.1-3.7 0-3.7-11.2-7.3-11.2-3.7 0-3.7 3.5-7.3 3.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-2.9-7.3-2.9-3.7 0-3.7 8.4-7.3 8.4-3.7 0-3.7-14.6-7.3-14.6-3.7 0-3.7 5.8-7.3 5.8-2.2 0-3.8-0.4-5.5-1.5-1.8-1.1-1.8-2.9-2.9-4.8-1-1.8 1.9-2.7 1.9-4.8 0-3.4-2.1-3.4-2.1-6.8s-9.9-3.4-9.9-6.8 8-3.4 8-6.8c0-2.2 2.1-2.4 3.1-4.2 1.1-1.8 0.2-3.9 2-5 1.8-1 3.1-7.9 5.3-7.9 3.7 0 3.7 0.9 7.3 0.9 3.7 0 3.7 6.7 7.3 6.7 3.7 0 3.7-1.8 7.3-1.8 3.7 0 3.7-0.6 7.3-0.6 3.7 0 3.7-7.8 7.3-7.8h7.3c3.7 0 3.7 4.7 7.3 4.7 3.7 0 3.7-1.1 7.3-1.1 3.7 0 3.7 11.6 7.3 11.6 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-12.9 7.3-12.9 3.7 0 3.7 10.9 7.3 10.9 3.7 0 3.7 1.3 7.3 1.3 3.7 0 3.7-8.7 7.3-8.7 3.7 0 3.7 11.5 7.3 11.5 3.7 0 3.7-1.4 7.3-1.4 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-5.8 7.3-5.8 3.7 0 3.7-1.3 7.3-1.3 3.7 0 3.7 6.6 7.3 6.6s3.7-9.3 7.3-9.3c3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7 8.5 7.3 8.5 3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7-1.5 7.3-1.5 3.7 0 3.7 1.6 7.3 1.6s3.7-5.1 7.3-5.1c2.2 0 0.6 9.6 2.4 10.7s4.1-2 5.1-0.1c1 1.8 10.3 2.2 10.3 4.3 0 3.4-10.7 3.4-10.7 6.8s1.2 3.4 1.2 6.8 1.9 3.4 1.9 6.8c0 2.2 7.2 7.7 6.2 9.5-1.1 1.8-12.3-6.5-14.1-5.5-1.7 0.9-0.1 6.2-2.2 6.2z" fill="transparent" stroke="#fff"/>
+                            </svg>
+                            <div class="dots">
+                                <div class="dot dot-1"></div>
+                                <div class="dot dot-2"></div>
+                                <div class="dot dot-3"></div>
+                                <div class="dot dot-4"></div>
+                                <div class="dot dot-5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!--servicos -->
+        <section id="services" class="services">
+            <div class="container">
+                <h2 class="section-title">Nossos Serviços</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Desenvolvimento Web</h3>
+                        <p>Sites modernos e responsivos com as melhores tecnologias do mercado</p>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Aplicativos Mobile</h3>
+                        <p>Apps nativos e híbridos para iOS e Android</p>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h3>Soluções em Nuvem</h3>
+                        <p>Infraestrutura e serviços em cloud computing</p>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Segurança Digital</h3>
+                        <p>Proteção e monitoramento de sistemas</p>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>Automação</h3>
+                        <p>Processos automatizados e inteligência artificial</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!--projetos-->
+        <section id="projects" class="projects">
+            <div class="container">
+                <h2 class="section-title">Alguns de Nossos Projetos</h2>
+                <div class="projects-carousel">
+                    <div class="carousel-container" id="projectsCarousel">
+
+                        <div class="project-card" onclick="window.open('https://eurovillebmw.com.br/bmw', '_blank')">
+                            <div class="project-image">
+        <img src="public/bmw.jpg" alt="Euroville - BMW">
+                            </div>
+                            <div class="project-info">
+                                <h3>Euroville - BMW</h3>
+                                <p>Plataforma institucional com catálogo de serviços e agendamento online para a concessionária BMW.</p>
+                                <div class="project-tech">
+                                    <span class="tech-tag">Backend Customizado</span>
+                                    <span class="tech-tag">MySQL</span>
+                                    <span class="tech-tag">HTML/CSS</span>
+                                    <span class="tech-tag">Javascript</span>
+                                    <span class="tech-tag">SSR</span>
+                                    <span class="tech-tag">PHP 8.2</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+<div class="project-card" onclick="window.open('https://peregrinosout.com', '_blank')">
+    <div class="project-image">
+        <img src="public/dev.png" alt="E-commerce - Peregrinos">
+    </div>
+    <div class="project-info">
+        <h3>E-commerce - Peregrinos</h3>
+        <p>Loja online de equipamentos outdoor com catálogo completo e sistema de pagamento</p>
+        <div class="project-tech">
+            <span class="tech-tag">Liquid</span>
+            <span class="tech-tag">Javascript</span>
+            <span class="tech-tag">SCSS</span>
+            <span class="tech-tag">Checkout integrado</span>
+            <span class="tech-tag">Ruby on Rails</span>
+        </div>
+    </div>
+</div>
+                        
+                        <div class="project-card" onclick="window.open('https://cumbucaboa.com.br', '_blank')">
+                            <div class="project-image">
+                                <img src="public/comida.jpg" alt="Delivery">
+                            </div>
+                            <div class="project-info">
+                                <h3>Delivery</h3>
+                                <p>Plataforma de delivery de comida congelada gourmet com sistema de agendamento de entregas e gestão de pedidos personalizados</p>
+                                <div class="project-tech">
+                                    <span class="tech-tag">WhatsApp Business API</span>
+                                    <span class="tech-tag">Liquid</span>
+                                    <span class="tech-tag">JS</span>
+                                    <span class="tech-tag">CDN (Content Delivery Network)</span>
+                                    <span class="tech-tag">Sistema de pagamentos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="carousel-nav carousel-prev" onclick="previousProject()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-nav carousel-next" onclick="nextProject()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <div class="carousel-indicators">
+                        <span class="carousel-dot active" onclick="goToProject(0)"></span>
+                        <span class="carousel-dot" onclick="goToProject(1)"></span>
+                        <span class="carousel-dot" onclick="goToProject(2)"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2 class="section-title">Sobre a FH.Tech</h2>
+                        <p>
+                            Somos uma empresa especializada em soluções tecnológicas inovadoras, 
+                            comprometida em transformar a visão digital dos nossos clientes em realidade.
+                        </p>
+                        <p>
+                            Com expertise em desenvolvimento web, mobile e consultoria em tecnologia, 
+                            oferecemos serviços personalizados que atendem às necessidades específicas 
+                            de cada projeto.
+                        </p>
+                        <div class="stats">
+                            <div class="stat">
+                                <h3>50+</h3>
+                                <p>Projetos Entregues</p>
+                            </div>
+                            <div class="stat">
+                                <h3>100%</h3>
+                                <p>Satisfação dos Clientes</p>
+                            </div>
+                            <div class="stat">
+                                <h3>24/7</h3>
+                                <p>Suporte Técnico</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-image">
+                        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=400&fit=crop" alt="Tecnologia">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing all functions');
+    
+    initializeTextAnimation();
+    
+    checkElements();
+});
+
+function checkElements() {
+    const elements = {
+        'themeIcon': document.getElementById('themeIcon'),
+        'mobileMenu': document.getElementById('mobileMenu'),
+        'hamburger': document.querySelector('.hamburger'),
+        'miniGame': document.getElementById('miniGame'),
+        'textHacker': document.getElementById('textHacker'),
+        'projectsCarousel': document.getElementById('projectsCarousel')
+    };
+    
+    console.log('Elementos encontrados:', elements);
+    
+    for (const [name, element] of Object.entries(elements)) {
+        if (!element) {
+            console.warn(`Elemento não encontrado: ${name}`);
+        }
+    }
+}
+
+function toggleTheme() {
+    console.log('Toggle theme called');
+    const body = document.body;
+    const themeIcon = document.getElementById('themeIcon');
+    
+    if (!themeIcon) {
+        console.error('themeIcon element not found');
+        return;
+    }
+    
+    body.classList.toggle('light-theme');
+    
+    if (body.classList.contains('light-theme')) {
+        themeIcon.className = 'fas fa-moon theme-icon';
+        console.log('Switched to light theme');
+    } else {
+        themeIcon.className = 'fas fa-sun theme-icon';
+        console.log('Switched to dark theme');
+    }
+}
+
+function toggleMenu() {
+    console.log('Toggle menu called');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (!mobileMenu || !hamburger) {
+        console.error('Menu elements not found:', { mobileMenu, hamburger });
+        return;
+    }
+    
+    mobileMenu.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    console.log('Menu toggled');
+}
+
+function closeMenu() {
+    console.log('Close menu called');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (!mobileMenu || !hamburger) {
+        console.error('Menu elements not found:', { mobileMenu, hamburger });
+        return;
+    }
+    
+    mobileMenu.classList.remove('active');
+    hamburger.classList.remove('active');
+    console.log('Menu closed');
+}
+
+//game
+function openGame() {
+    console.log('Opening mini game');
+    const miniGame = document.getElementById('miniGame');
+    if (miniGame) {
+        miniGame.classList.add('active');
+        console.log('Mini game opened');
+    } else {
+        console.error('Mini game element not found');
+    }
+}
+
+function closeGame() {
+    console.log('Closing mini game');
+    const miniGame = document.getElementById('miniGame');
+    if (miniGame) {
+        miniGame.classList.remove('active');
+        console.log('Mini game closed');
+        if (typeof gameRunning !== 'undefined' && gameRunning && typeof endGame === 'function') {
+            endGame();
+        }
+    } else {
+        console.error('Mini game element not found');
+    }
+}
+
+//carrossel
+let currentProject = 0;
+const totalProjects = 3;
+
+function nextProject() {
+    currentProject = (currentProject + 1) % totalProjects;
+    updateCarousel();
+}
+
+function previousProject() {
+    currentProject = (currentProject - 1 + totalProjects) % totalProjects;
+    updateCarousel();
+}
+
+function goToProject(index) {
+    currentProject = index;
+    updateCarousel();
+}
+
+function updateCarousel() {
+    const carousel = document.getElementById('projectsCarousel');
+    const dots = document.querySelectorAll('.carousel-dot');
+    
+    if (!carousel) {
+        console.error('Carousel element not found');
+        return;
+    }
+    
+    carousel.style.transform = `translateX(-${currentProject * (100 / totalProjects)}%)`;
+    
+    dots.forEach((dot, index) => {
+        if (dot) {
+            dot.classList.toggle('active', index === currentProject);
+        }
+    });
+}
+
+function initializeTextAnimation() {
+    console.log('Initializing text animation');
+    
+    const hackerText = document.getElementById('textHacker');
+    if (!hackerText) {
+        console.warn('textHacker element not found for animation');
+        return;
+    }
+    
+    const words = [
+        'desenvolvedores',
+        'inovadores', 
+        'criativos',
+        'técnicos',
+        'especialistas'
+    ];
+    
+    let currentWordIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    
+    function typeWriter() {
+        if (!hackerText) return; 
+        
+        const currentWord = words[currentWordIndex];
+        
+        if (isDeleting) {
+            hackerText.textContent = currentWord.substring(0, currentCharIndex - 1);
+            currentCharIndex--;
+        } else {
+            hackerText.textContent = currentWord.substring(0, currentCharIndex + 1);
+            currentCharIndex++;
+        }
+        
+        let typeSpeed = isDeleting ? 100 : 150;
+        
+        if (!isDeleting && currentCharIndex === currentWord.length) {
+            typeSpeed = 2000;
+            isDeleting = true;
+        } else if (isDeleting && currentCharIndex === 0) {
+            isDeleting = false;
+            currentWordIndex = (currentWordIndex + 1) % words.length;
+            typeSpeed = 500;
+        }
+        
+        setTimeout(typeWriter, typeSpeed);
+    }
+    
+    setTimeout(typeWriter, 100);
+}
+
+window.toggleTheme = toggleTheme;
+window.toggleMenu = toggleMenu;
+window.closeMenu = closeMenu;
+window.openGame = openGame;
+window.closeGame = closeGame;
+window.nextProject = nextProject;
+window.previousProject = previousProject;
+window.goToProject = goToProject;
+
+        </script>
+           <!--contato-->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Entre em Contato</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Fale Conosco</h3>
+                    <div class="contact-item">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>(11) 95679-5412</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>flyhighcontato@outlook.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Seg - Sex: 9h às 18h</span>
+                    </div>
+                </div>
+                
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Seu Nome" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Seu E-mail" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="phone" name="phone" placeholder="Seu Telefone">
+                    </div>
+                    <div class="form-group">
+                        <select id="service" name="service" required>
+                            <option value="">Selecione um serviço</option>
+                            <option value="Desenvolvimento Web">Desenvolvimento Web</option>
+                            <option value="Aplicativo Mobile">Aplicativo Mobile</option>
+                            <option value="Soluções em Nuvem">Soluções em Nuvem</option>
+                            <option value="Segurança Digital">Segurança Digital</option>
+                            <option value="Automação">Automação</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Sua Mensagem" rows="4" required></textarea>
+                    </div>
+                    <div class="form-buttons">
+                        <div class="voltage-button">
+                            <button type="button" onclick="sendWhatsAppMessage()">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </button>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 234.6 61.3" preserveAspectRatio="none" xml:space="preserve">
+                                <path class="voltage line-1" d="m216.3 51.2c-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 6.8-7.3 6.8-3.7 0-3.7-4.6-7.3-4.6-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-0.9-7.3-0.9-3.7 0-3.7-2.7-7.3-2.7-3.7 0-3.7 7.8-7.3 7.8-3.7 0-3.7-4.9-7.3-4.9-3.7 0-3.7-7.8-7.3-7.8-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 3.1-7.3 3.1-3.7 0-3.7 10.9-7.3 10.9-3.7 0-3.7-12.5-7.3-12.5-3.7 0-3.7 4.6-7.3 4.6-3.7 0-3.7 4.5-7.3 4.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-10-7.3-10-3.7 0-3.7-0.4-7.3-0.4-3.7 0-3.7 2.3-7.3 2.3-3.7 0-3.7 7.1-7.3 7.1-3.7 0-3.7-11.2-7.3-11.2-3.7 0-3.7 3.5-7.3 3.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-2.9-7.3-2.9-3.7 0-3.7 8.4-7.3 8.4-3.7 0-3.7-14.6-7.3-14.6-3.7 0-3.7 5.8-7.3 5.8-2.2 0-3.8-0.4-5.5-1.5-1.8-1.1-1.8-2.9-2.9-4.8-1-1.8 1.9-2.7 1.9-4.8 0-3.4-2.1-3.4-2.1-6.8s-9.9-3.4-9.9-6.8 8-3.4 8-6.8c0-2.2 2.1-2.4 3.1-4.2 1.1-1.8 0.2-3.9 2-5 1.8-1 3.1-7.9 5.3-7.9 3.7 0 3.7 0.9 7.3 0.9 3.7 0 3.7 6.7 7.3 6.7 3.7 0 3.7-1.8 7.3-1.8 3.7 0 3.7-0.6 7.3-0.6 3.7 0 3.7-7.8 7.3-7.8h7.3c3.7 0 3.7 4.7 7.3 4.7 3.7 0 3.7-1.1 7.3-1.1 3.7 0 3.7 11.6 7.3 11.6 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-12.9 7.3-12.9 3.7 0 3.7 10.9 7.3 10.9 3.7 0 3.7 1.3 7.3 1.3 3.7 0 3.7-8.7 7.3-8.7 3.7 0 3.7 11.5 7.3 11.5 3.7 0 3.7-1.4 7.3-1.4 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-5.8 7.3-5.8 3.7 0 3.7-1.3 7.3-1.3 3.7 0 3.7 6.6 7.3 6.6s3.7-9.3 7.3-9.3c3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7 8.5 7.3 8.5 3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7-1.5 7.3-1.5 3.7 0 3.7 1.6 7.3 1.6s3.7-5.1 7.3-5.1c2.2 0 0.6 9.6 2.4 10.7s4.1-2 5.1-0.1c1 1.8 10.3 2.2 10.3 4.3 0 3.4-10.7 3.4-10.7 6.8s1.2 3.4 1.2 6.8 1.9 3.4 1.9 6.8c0 2.2 7.2 7.7 6.2 9.5-1.1 1.8-12.3-6.5-14.1-5.5-1.7 0.9-0.1 6.2-2.2 6.2z" fill="transparent" stroke="#fff"/>
+                            </svg>
+                            <div class="dots">
+                                <div class="dot dot-1"></div>
+                                <div class="dot dot-2"></div>
+                                <div class="dot dot-3"></div>
+                                <div class="dot dot-4"></div>
+                                <div class="dot dot-5"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="voltage-button">
+                            <button type="button" onclick="sendEmailMessage()">
+                                <i class="fas fa-envelope"></i> E-mail
+                            </button>
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 234.6 61.3" preserveAspectRatio="none" xml:space="preserve">
+                                <path class="voltage line-1" d="m216.3 51.2c-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 6.8-7.3 6.8-3.7 0-3.7-4.6-7.3-4.6-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-0.9-7.3-0.9-3.7 0-3.7-2.7-7.3-2.7-3.7 0-3.7 7.8-7.3 7.8-3.7 0-3.7-4.9-7.3-4.9-3.7 0-3.7-7.8-7.3-7.8-3.7 0-3.7-1.1-7.3-1.1-3.7 0-3.7 3.1-7.3 3.1-3.7 0-3.7 10.9-7.3 10.9-3.7 0-3.7-12.5-7.3-12.5-3.7 0-3.7 4.6-7.3 4.6-3.7 0-3.7 4.5-7.3 4.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-10-7.3-10-3.7 0-3.7-0.4-7.3-0.4-3.7 0-3.7 2.3-7.3 2.3-3.7 0-3.7 7.1-7.3 7.1-3.7 0-3.7-11.2-7.3-11.2-3.7 0-3.7 3.5-7.3 3.5-3.7 0-3.7 3.6-7.3 3.6-3.7 0-3.7-2.9-7.3-2.9-3.7 0-3.7 8.4-7.3 8.4-3.7 0-3.7-14.6-7.3-14.6-3.7 0-3.7 5.8-7.3 5.8-2.2 0-3.8-0.4-5.5-1.5-1.8-1.1-1.8-2.9-2.9-4.8-1-1.8 1.9-2.7 1.9-4.8 0-3.4-2.1-3.4-2.1-6.8s-9.9-3.4-9.9-6.8 8-3.4 8-6.8c0-2.2 2.1-2.4 3.1-4.2 1.1-1.8 0.2-3.9 2-5 1.8-1 3.1-7.9 5.3-7.9 3.7 0 3.7 0.9 7.3 0.9 3.7 0 3.7 6.7 7.3 6.7 3.7 0 3.7-1.8 7.3-1.8 3.7 0 3.7-0.6 7.3-0.6 3.7 0 3.7-7.8 7.3-7.8h7.3c3.7 0 3.7 4.7 7.3 4.7 3.7 0 3.7-1.1 7.3-1.1 3.7 0 3.7 11.6 7.3 11.6 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-12.9 7.3-12.9 3.7 0 3.7 10.9 7.3 10.9 3.7 0 3.7 1.3 7.3 1.3 3.7 0 3.7-8.7 7.3-8.7 3.7 0 3.7 11.5 7.3 11.5 3.7 0 3.7-1.4 7.3-1.4 3.7 0 3.7-2.6 7.3-2.6 3.7 0 3.7-5.8 7.3-5.8 3.7 0 3.7-1.3 7.3-1.3 3.7 0 3.7 6.6 7.3 6.6s3.7-9.3 7.3-9.3c3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7 8.5 7.3 8.5 3.7 0 3.7 0.2 7.3 0.2 3.7 0 3.7-1.5 7.3-1.5 3.7 0 3.7 1.6 7.3 1.6s3.7-5.1 7.3-5.1c2.2 0 0.6 9.6 2.4 10.7s4.1-2 5.1-0.1c1 1.8 10.3 2.2 10.3 4.3 0 3.4-10.7 3.4-10.7 6.8s1.2 3.4 1.2 6.8 1.9 3.4 1.9 6.8c0 2.2 7.2 7.7 6.2 9.5-1.1 1.8-12.3-6.5-14.1-5.5-1.7 0.9-0.1 6.2-2.2 6.2z" fill="transparent" stroke="#fff"/>
+                            </svg>
+                            <div class="dots">
+                                <div class="dot dot-1"></div>
+                                <div class="dot dot-2"></div>
+                                <div class="dot dot-3"></div>
+                                <div class="dot dot-4"></div>
+                                <div class="dot dot-5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Funções de contato integradas no HTML
+        function sendWhatsAppMessage() {
+            console.log('Iniciando envio via WhatsApp');
+            
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const service = document.getElementById('service');
+            const message = document.getElementById('message');
+            
+            // Verificar se os elementos existem
+            if (!name || !email || !service || !message) {
+                console.error('Alguns elementos do formulário não foram encontrados');
+                alert('Erro: Elementos do formulário não encontrados. Tente recarregar a página.');
+                return;
+            }
+            
+            // Validar campos obrigatórios
+            if (!name.value.trim() || !email.value.trim() || !service.value || !message.value.trim()) {
+                alert('Por favor, preencha todos os campos obrigatórios (Nome, Email, Serviço e Mensagem).');
+                return;
+            }
+            
+            // Criar mensagem do WhatsApp
+            const whatsappMessage = `Olá! Gostaria de solicitar o serviço: ${service.value}
+
+Nome: ${name.value}
+Email: ${email.value}
+Telefone: ${phone.value || 'Não informado'}
+Mensagem: ${message.value}`;
+            
+            try {
+                const whatsappUrl = `https://wa.me/5511956795412?text=${encodeURIComponent(whatsappMessage)}`;
+                console.log('Abrindo WhatsApp:', whatsappUrl);
+                window.open(whatsappUrl, '_blank');
+            } catch (error) {
+                console.error('Erro ao abrir WhatsApp:', error);
+                alert('Erro ao abrir WhatsApp. Tente novamente.');
+            }
+        }
+        
+        function sendEmailMessage() {
+            console.log('Iniciando envio via Email');
+            
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const service = document.getElementById('service');
+            const message = document.getElementById('message');
+            
+            // Verificar se os elementos existem
+            if (!name || !email || !service || !message) {
+                console.error('Alguns elementos do formulário não foram encontrados');
+                alert('Erro: Elementos do formulário não encontrados. Tente recarregar a página.');
+                return;
+            }
+            
+            // Validar campos obrigatórios
+            if (!name.value.trim() || !email.value.trim() || !service.value || !message.value.trim()) {
+                alert('Por favor, preencha todos os campos obrigatórios (Nome, Email, Serviço e Mensagem).');
+                return;
+            }
+            
+            // Criar email
+            const subject = `Solicitação de Serviço: ${service.value}`;
+            const body = `Nome: ${name.value}
+Email: ${email.value}
+Telefone: ${phone.value || 'Não informado'}
+Serviço: ${service.value}
+
+Mensagem:
+${message.value}`;
+            
+            try {
+                const mailtoUrl = `mailto:flyhighcontato@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                console.log('Abrindo cliente de email:', mailtoUrl);
+                window.location.href = mailtoUrl;
+            } catch (error) {
+                console.error('Erro ao abrir email:', error);
+                alert('Erro ao abrir cliente de email. Tente novamente.');
+            }
+        }
+        
+        // Tornar as funções globais
+        window.sendWhatsAppMessage = sendWhatsAppMessage;
+        window.sendEmailMessage = sendEmailMessage;
+        
+        // Log para debug
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Seção de contato carregada - funções disponíveis');
+        });
+    </script>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 FlyHigh.Tech. Todos os direitos reservados.</p>
+        <p>Developed by <span class="trademark">®FH Tech</span></p>
+    </footer>
+    <script>
+        //riar estrelas
+function createStars() {
+    const starsContainer = document.createElement('div');
+    starsContainer.className = 'stars-container';
+    document.body.appendChild(starsContainer);
+    
+    const starCount = 200;
+    
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100;
+        
+        const size = Math.random() * 2 + 1;
+        
+        const duration = Math.random() * 3 + 2 + 's';
+        const delay = Math.random() * 5 + 's';
+        
+        star.style.left = `${posX}%`;
+        star.style.top = `${posY}%`;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.setProperty('--duration', duration);
+        star.style.setProperty('--delay', delay);
+        
+        starsContainer.appendChild(star);
+    }
+}
+
+//criar meteoros
+function createMeteors() {
+    const starsContainer = document.querySelector('.stars-container');
+    
+    function createMeteor() {
+        if (!starsContainer) return;
+        
+        const meteor = document.createElement('div');
+        meteor.className = 'meteor';
+        
+        const posX = Math.random() * window.innerWidth;
+        const posY = Math.random() * (window.innerHeight / 4);
+        
+        meteor.style.left = `${posX}px`;
+        meteor.style.top = `${posY}px`;
+        
+        const duration = Math.random() * 2 + 1;
+        meteor.style.animation = `meteor ${duration}s linear forwards`;
+        
+        starsContainer.appendChild(meteor);
+        
+        setTimeout(() => {
+            meteor.remove();
+        }, duration * 1000);
+    }
+    
+    setInterval(() => {
+        createMeteor();
+    }, Math.random() * 2000 + 1000);
+}
+
+function handleResize() {
+    const starsContainer = document.querySelector('.stars-container');
+    if (starsContainer) {
+        document.body.removeChild(starsContainer);
+    }
+    createStars();
+    createMeteors();
+}
+
+function initializeFadeInText() {
+    const title = document.querySelector(".fade-in");
+    if (title) {
+        const text = title.innerText || title.textContent || "";
+        title.innerText = "";
+        text.split("").forEach((char, index) => {
+            let span = document.createElement("span");
+            span.innerText = char;
+            span.style.animation = `letterFade 0.05s ease ${index * 0.05}s forwards`;
+            title.appendChild(span);
+        });
+    }
+}
+
+function initializeContactForm() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                subject: formData.get('subject'),
+            };
+
+            try {
+                const response = await fetch('/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error('Erro ao enviar formulário:', error);
+                alert('Erro ao enviar mensagem. Tente novamente.');
+            }
+        });
+    }
+}
+
+function initializeModalAndCalculator() {
+    const button = document.getElementById('cta-button');
+    const modal = document.getElementById('modal');
+    
+    if (button && modal) {
+        button.addEventListener('click', () => {
+            modal.style.display = 'block';
+        });
+        
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+    
+    const calculateButton = document.getElementById('calculate');
+    const result = document.getElementById('result');
+    
+    if (calculateButton) {
+        calculateButton.addEventListener('click', () => {
+            const serviceType = document.getElementById('serviceType').value;
+            const complexity = parseInt(document.getElementById('complexity').value);
+            let basePrice = 0;
+            
+            if (serviceType === 'site') basePrice = 1000;
+            if (serviceType === 'app') basePrice = 2000;
+            if (serviceType === 'loja') basePrice = 1500;
+            
+            const finalPrice = basePrice + (complexity * 100);
+            
+            if (result) {
+                result.innerHTML = `💡 Seu orçamento estimado: R$ ${finalPrice.toLocaleString('pt-BR')}`;
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('backgroundCanvas');
+    if (canvas) {
+        canvas.remove();
+    }
+    
+    createStars();
+    createMeteors();
+    
+    window.addEventListener('resize', handleResize);
+    
+    initializeFadeInText();
+    
+    initializeContactForm();
+    
+    initializeModalAndCalculator();
+});
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        createStars,
+        createMeteors,
+        handleResize,
+        initializeFadeInText,
+        initializeContactForm,
+        initializeModalAndCalculator
+    };
+}
+    </script>
+
+
+    <div class="sun"></div>
+<div class="clouds-container">
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+</div>
+</body>
+</html>

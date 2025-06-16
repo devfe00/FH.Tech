@@ -1,0 +1,87 @@
+
+.mini-game {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--card-background);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 20px;
+    width: 320px;
+    text-align: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mini-game.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-game {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.score {
+    color: var(--primary-color);
+}
+
+.lives {
+    color: var(--accent-color);
+}
+
+#gameCanvas {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    margin: 10px 0;
+}
+
+.game-controls {
+    margin-top: 10px;
+}
+
+#startBtn {
+    background: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: background 0.3s ease;
+}
+
+#startBtn:hover {
+    background: var(--secondary-color);
+}
+
+.game-controls p {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
