@@ -1080,12 +1080,13 @@ body.light-theme footer .trademark {
 /*game mobile (controles)*/
 .mobile-controls {
     display: none;
-    position: absolute;
-    bottom: 10px;
+    position: fixed; /* mudou de absolute para fixed */
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     gap: 20px;
     align-items: center;
+    z-index: 1001; /* adicionar z-index maior que o jogo */
 }
 
 .move-controls {
@@ -1113,10 +1114,4 @@ body.light-theme footer .trademark {
 
 .shoot-btn {
     margin-left: 20px;
-}
-
-@media (max-width: 768px) {
-    .mobile-controls {
-        display: flex;
-    }
 }

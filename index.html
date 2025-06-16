@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-        <script>
+       <script>
 
 let gameScore = 0;
 let gameRunning = false;
@@ -109,290 +109,313 @@ const GAME_HEIGHT = 200;
 
 //objetos
 class Player {
-    constructor() {
-        this.x = GAME_WIDTH / 2 - 15;
-        this.y = GAME_HEIGHT - 30;
-        this.width = 30;
-        this.height = 20;
-        this.speed = 3;
-    }
+   constructor() {
+       this.x = GAME_WIDTH / 2 - 15;
+       this.y = GAME_HEIGHT - 30;
+       this.width = 30;
+       this.height = 20;
+       this.speed = 3;
+   }
 
-    update() {
-        if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
-            this.x = Math.max(0, this.x - this.speed);
-        }
-        if (keys['ArrowRight'] || keys['d'] || keys['D']) {
-            this.x = Math.min(GAME_WIDTH - this.width, this.x + this.speed);
-        }
-    }
+   update() {
+       if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+           this.x = Math.max(0, this.x - this.speed);
+       }
+       if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+           this.x = Math.min(GAME_WIDTH - this.width, this.x + this.speed);
+       }
+   }
 
-    draw() {
-        gameCtx.fillStyle = '#4095ff';
-        gameCtx.fillRect(this.x, this.y, this.width, this.height);
-        gameCtx.fillStyle = '#00d4ff';
-        gameCtx.fillRect(this.x + 5, this.y - 5, 20, 10);
-    }
+   draw() {
+       gameCtx.fillStyle = '#4095ff';
+       gameCtx.fillRect(this.x, this.y, this.width, this.height);
+       gameCtx.fillStyle = '#00d4ff';
+       gameCtx.fillRect(this.x + 5, this.y - 5, 20, 10);
+   }
 }
 
 class Bullet {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.width = 4;
-        this.height = 10;
-        this.speed = 5;
-    }
+   constructor(x, y) {
+       this.x = x;
+       this.y = y;
+       this.width = 4;
+       this.height = 10;
+       this.speed = 5;
+   }
 
-    update() {
-        this.y -= this.speed;
-    }
+   update() {
+       this.y -= this.speed;
+   }
 
-    draw() {
-        gameCtx.fillStyle = '#ffff00';
-        gameCtx.fillRect(this.x, this.y, this.width, this.height);
-    }
+   draw() {
+       gameCtx.fillStyle = '#ffff00';
+       gameCtx.fillRect(this.x, this.y, this.width, this.height);
+   }
 }
 
 class Enemy {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.width = 25;
-        this.height = 20;
-        this.speed = 1;
-    }
+   constructor(x, y) {
+       this.x = x;
+       this.y = y;
+       this.width = 25;
+       this.height = 20;
+       this.speed = 1;
+   }
 
-    update() {
-        this.y += this.speed;
-    }
+   update() {
+       this.y += this.speed;
+   }
 
-    draw() {
-        gameCtx.fillStyle = '#ff6b6b';
-        gameCtx.fillRect(this.x, this.y, this.width, this.height);
-        gameCtx.fillStyle = '#ff4757';
-        gameCtx.fillRect(this.x + 5, this.y + 5, 15, 10);
-    }
+   draw() {
+       gameCtx.fillStyle = '#ff6b6b';
+       gameCtx.fillRect(this.x, this.y, this.width, this.height);
+       gameCtx.fillStyle = '#ff4757';
+       gameCtx.fillRect(this.x + 5, this.y + 5, 15, 10);
+   }
 }
 
 //inicia
 function initGame() {
-    gameCanvas = document.getElementById('gameCanvas');
-    if (!gameCanvas) return;
-    
-    gameCtx = gameCanvas.getContext('2d');
-    
-    player = new Player();
-    bullets = [];
-    enemies = [];
-    
-    document.addEventListener('keydown', (e) => {
-        keys[e.key] = true;
-        if (e.key === ' ' || e.key === 'Spacebar') {
-            e.preventDefault();
-            if (gameRunning) {
-                bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
-            }
-        }
-    });
-    
-    document.addEventListener('keyup', (e) => {
-        keys[e.key] = false;
-    });
+   gameCanvas = document.getElementById('gameCanvas');
+   if (!gameCanvas) return;
+   
+   gameCtx = gameCanvas.getContext('2d');
+   
+   player = new Player();
+   bullets = [];
+   enemies = [];
+   
+   document.addEventListener('keydown', (e) => {
+       keys[e.key] = true;
+       if (e.key === ' ' || e.key === 'Spacebar') {
+           e.preventDefault();
+           if (gameRunning) {
+               bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
+           }
+       }
+   });
+   
+   document.addEventListener('keyup', (e) => {
+       keys[e.key] = false;
+   });
 }
 
 function startGame() {
-    if (gameRunning) return;
-    
-    gameRunning = true;
-    gameScore = 0;
-    lives = 3;
-    bullets = [];
-    enemies = [];
-    
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) {
-        startBtn.textContent = 'Game Running...';
-        startBtn.disabled = true;
-    }
-    
-    gameLoop = setInterval(updateGame, 1000/60); 
-    
-    //inimigos
-    enemySpawner = setInterval(() => {
-        if (gameRunning) {
-            const x = Math.random() * (GAME_WIDTH - 25);
-            enemies.push(new Enemy(x, -20));
-        }
-    }, 1500);
+   if (gameRunning) return;
+   
+   gameRunning = true;
+   gameScore = 0;
+   lives = 3;
+   bullets = [];
+   enemies = [];
+   
+   const startBtn = document.getElementById('startBtn');
+   if (startBtn) {
+       startBtn.textContent = 'Game Running...';
+       startBtn.disabled = true;
+   }
+   
+   const mobileControls = document.getElementById('mobileControls');
+   if (mobileControls && window.innerWidth <= 768) {
+       mobileControls.style.display = 'flex';
+   }
+   
+   gameLoop = setInterval(updateGame, 1000/60); 
+   
+   //inimigos
+   enemySpawner = setInterval(() => {
+       if (gameRunning) {
+           const x = Math.random() * (GAME_WIDTH - 25);
+           enemies.push(new Enemy(x, -20));
+       }
+   }, 1500);
 }
 
 function updateGame() {
-    if (!gameCtx) return;
-    
-    gameCtx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    
-    player.update();
-    player.draw();
-    
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        bullets[i].update();
-        bullets[i].draw();
-        
-        if (bullets[i].y < 0) {
-            bullets.splice(i, 1);
-        }
-    }
-    
-    //atualiza
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        enemies[i].update();
-        enemies[i].draw();
-        
-        if (enemies[i].y > GAME_HEIGHT) {
-            enemies.splice(i, 1);
-            lives--;
-            if (lives <= 0) {
-                endGame();
-            }
-        }
-    }
-    
-    // ve colisoes
-    checkCollisions();
-    
-    // atualiza interface
-    const scoreEl = document.getElementById('score');
-    const livesEl = document.getElementById('lives');
-    if (scoreEl) scoreEl.textContent = gameScore;
-    if (livesEl) livesEl.textContent = lives;
+   if (!gameCtx) return;
+   
+   gameCtx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+   
+   player.update();
+   player.draw();
+   
+   for (let i = bullets.length - 1; i >= 0; i--) {
+       bullets[i].update();
+       bullets[i].draw();
+       
+       if (bullets[i].y < 0) {
+           bullets.splice(i, 1);
+       }
+   }
+   
+   //atualiza
+   for (let i = enemies.length - 1; i >= 0; i--) {
+       enemies[i].update();
+       enemies[i].draw();
+       
+       if (enemies[i].y > GAME_HEIGHT) {
+           enemies.splice(i, 1);
+           lives--;
+           if (lives <= 0) {
+               endGame();
+           }
+       }
+   }
+   
+   // ve colisoes
+   checkCollisions();
+   
+   // atualiza interface
+   const scoreEl = document.getElementById('score');
+   const livesEl = document.getElementById('lives');
+   if (scoreEl) scoreEl.textContent = gameScore;
+   if (livesEl) livesEl.textContent = lives;
 }
 
 function checkCollisions() {
-    //bala-inimigo
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        for (let j = enemies.length - 1; j >= 0; j--) {
-            if (bullets[i] && enemies[j] && 
-                bullets[i].x < enemies[j].x + enemies[j].width &&
-                bullets[i].x + bullets[i].width > enemies[j].x &&
-                bullets[i].y < enemies[j].y + enemies[j].height &&
-                bullets[i].y + bullets[i].height > enemies[j].y) {
-                
-                bullets.splice(i, 1);
-                enemies.splice(j, 1);
-                gameScore += 10;
-                break;
-            }
-        }
-    }
-    
-    //jogador-inimigo
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        if (enemies[i].x < player.x + player.width &&
-            enemies[i].x + enemies[i].width > player.x &&
-            enemies[i].y < player.y + player.height &&
-            enemies[i].y + enemies[i].height > player.y) {
-            
-            enemies.splice(i, 1);
-            lives--;
-            if (lives <= 0) {
-                endGame();
-            }
-        }
-    }
+   //bala-inimigo
+   for (let i = bullets.length - 1; i >= 0; i--) {
+       for (let j = enemies.length - 1; j >= 0; j--) {
+           if (bullets[i] && enemies[j] && 
+               bullets[i].x < enemies[j].x + enemies[j].width &&
+               bullets[i].x + bullets[i].width > enemies[j].x &&
+               bullets[i].y < enemies[j].y + enemies[j].height &&
+               bullets[i].y + bullets[i].height > enemies[j].y) {
+               
+               bullets.splice(i, 1);
+               enemies.splice(j, 1);
+               gameScore += 10;
+               break;
+           }
+       }
+   }
+   
+   //jogador-inimigo
+   for (let i = enemies.length - 1; i >= 0; i--) {
+       if (enemies[i].x < player.x + player.width &&
+           enemies[i].x + enemies[i].width > player.x &&
+           enemies[i].y < player.y + player.height &&
+           enemies[i].y + enemies[i].height > player.y) {
+           
+           enemies.splice(i, 1);
+           lives--;
+           if (lives <= 0) {
+               endGame();
+           }
+       }
+   }
 }
 
 function endGame() {
-    gameRunning = false;
-    
-    if (gameLoop) clearInterval(gameLoop);
-    if (enemySpawner) clearInterval(enemySpawner);
-    
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) {
-        startBtn.textContent = 'Start Game';
-        startBtn.disabled = false;
-    }
-    
-    //game over
-    if (gameCtx) {
-        gameCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        gameCtx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        
-        gameCtx.fillStyle = '#ffffff';
-        gameCtx.font = '20px Inter';
-        gameCtx.textAlign = 'center';
-        gameCtx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
-        
-        gameCtx.font = '16px Inter';
-        gameCtx.fillText(`Score: ${gameScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10);
-    }
+   gameRunning = false;
+   
+   if (gameLoop) clearInterval(gameLoop);
+   if (enemySpawner) clearInterval(enemySpawner);
+   
+   const startBtn = document.getElementById('startBtn');
+   if (startBtn) {
+       startBtn.textContent = 'Start Game';
+       startBtn.disabled = false;
+   }
+   
+   // Esconder controles móveis quando o jogo terminar
+   const mobileControls = document.getElementById('mobileControls');
+   if (mobileControls) {
+       mobileControls.style.display = 'none';
+   }
+   
+   //game over
+   if (gameCtx) {
+       gameCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+       gameCtx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+       
+       gameCtx.fillStyle = '#ffffff';
+       gameCtx.font = '20px Inter';
+       gameCtx.textAlign = 'center';
+       gameCtx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
+       
+       gameCtx.font = '16px Inter';
+       gameCtx.fillText(`Score: ${gameScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10);
+   }
 }
 
 function openGame() {
-    const miniGame = document.getElementById('miniGame');
-    if (miniGame) {
-        miniGame.classList.add('active');
-        initGame();
-    }
+   const miniGame = document.getElementById('miniGame');
+   
+   if (miniGame) {
+       miniGame.classList.add('active');
+       initGame();
+   }
 }
 
 function closeGame() {
-    const miniGame = document.getElementById('miniGame');
-    if (miniGame) {
-        miniGame.classList.remove('active');
-        if (gameRunning) {
-            endGame();
-        }
-    }
+   const miniGame = document.getElementById('miniGame');
+   const mobileControls = document.getElementById('mobileControls');
+   
+   if (miniGame) {
+       miniGame.classList.remove('active');
+       if (gameRunning) {
+           endGame();
+       }
+   }
+
+   if (mobileControls) {
+       mobileControls.style.display = 'none';
+   }
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
 
 //pra mobile
 function initMobileControls() {
-    const leftBtn = document.getElementById('leftBtn');
-    const rightBtn = document.getElementById('rightBtn');
-    const shootBtn = document.getElementById('shootBtn');
+   const leftBtn = document.getElementById('leftBtn');
+   const rightBtn = document.getElementById('rightBtn');
+   const shootBtn = document.getElementById('shootBtn');
 
-    leftBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys['ArrowLeft'] = true;
-    });
-    leftBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys['ArrowLeft'] = false;
-    });
+   if (!leftBtn || !rightBtn || !shootBtn) {
+       console.log('Botões não encontrados');
+       return;
+   }
 
-    rightBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys['ArrowRight'] = true;
-    });
-    rightBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys['ArrowRight'] = false;
-    });
+   leftBtn.addEventListener('touchstart', (e) => {
+       e.preventDefault();
+       keys['ArrowLeft'] = true;
+   });
+   leftBtn.addEventListener('touchend', (e) => {
+       e.preventDefault();
+       keys['ArrowLeft'] = false;
+   });
 
-    shootBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (gameRunning) {
-            bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
-        }
-    });
+   rightBtn.addEventListener('touchstart', (e) => {
+       e.preventDefault();
+       keys['ArrowRight'] = true;
+   });
+   rightBtn.addEventListener('touchend', (e) => {
+       e.preventDefault();
+       keys['ArrowRight'] = false;
+   });
+
+   shootBtn.addEventListener('touchstart', (e) => {
+       e.preventDefault();
+       if (gameRunning) {
+           bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
+       }
+   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initGame();
-    initMobileControls();
+   initGame();
+   initMobileControls();
 });
 </script>
 
 <!--pra mobile -->
 <div class="mobile-controls" id="mobileControls">
-    <div class="move-controls">
-        <button class="control-btn" id="leftBtn">←</button>
-        <button class="control-btn" id="rightBtn">→</button>
-    </div>
-    <button class="control-btn shoot-btn" id="shootBtn">🚀</button>
+   <div class="move-controls">
+       <button class="control-btn" id="leftBtn">←</button>
+       <button class="control-btn" id="rightBtn">→</button>
+   </div>
+   <button class="control-btn shoot-btn" id="shootBtn">🚀</button>
 </div>
     <main>
         <section id="home" class="hero">
