@@ -324,7 +324,7 @@ body.light-theme .sun {
     background: radial-gradient(circle, #ffeb3b 30%, #ffc107 70%);
     border-radius: 50%;
     box-shadow: 0 0 30px rgba(255, 235, 59, 0.8);
-    z-index: 1;
+    z-index: -2;
     animation: sunGlow 3s ease-in-out infinite alternate;
 }
 
