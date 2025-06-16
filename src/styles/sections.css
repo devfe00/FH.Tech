@@ -1076,3 +1076,47 @@ body.light-theme footer .trademark {
         right: 2px;
     }
 }
+
+/*game mobile (controles)*/
+.mobile-controls {
+    display: none;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 20px;
+    align-items: center;
+}
+
+.move-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--primary-color);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.control-btn:active {
+    background: var(--primary-color);
+    transform: scale(0.95);
+}
+
+.shoot-btn {
+    margin-left: 20px;
+}
+
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: flex;
+    }
+}
