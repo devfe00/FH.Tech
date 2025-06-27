@@ -938,7 +938,6 @@ window.goToProject = goToProject;
     </section>
 
     <script>
-        // Funções de contato integradas no HTML
         function sendWhatsAppMessage() {
             console.log('Iniciando envio via WhatsApp');
             
@@ -948,20 +947,17 @@ window.goToProject = goToProject;
             const service = document.getElementById('service');
             const message = document.getElementById('message');
             
-            // Verificar se os elementos existem
             if (!name || !email || !service || !message) {
                 console.error('Alguns elementos do formulário não foram encontrados');
                 alert('Erro: Elementos do formulário não encontrados. Tente recarregar a página.');
                 return;
             }
             
-            // Validar campos obrigatórios
             if (!name.value.trim() || !email.value.trim() || !service.value || !message.value.trim()) {
                 alert('Por favor, preencha todos os campos obrigatórios (Nome, Email, Serviço e Mensagem).');
                 return;
             }
             
-            // Criar mensagem do WhatsApp
             const whatsappMessage = `Olá! Gostaria de solicitar o serviço: ${service.value}
 
 Nome: ${name.value}
@@ -988,20 +984,17 @@ Mensagem: ${message.value}`;
             const service = document.getElementById('service');
             const message = document.getElementById('message');
             
-            // Verificar se os elementos existem
             if (!name || !email || !service || !message) {
                 console.error('Alguns elementos do formulário não foram encontrados');
                 alert('Erro: Elementos do formulário não encontrados. Tente recarregar a página.');
                 return;
             }
             
-            // Validar campos obrigatórios
             if (!name.value.trim() || !email.value.trim() || !service.value || !message.value.trim()) {
                 alert('Por favor, preencha todos os campos obrigatórios (Nome, Email, Serviço e Mensagem).');
                 return;
             }
             
-            // Criar email
             const subject = `Solicitação de Serviço: ${service.value}`;
             const body = `Nome: ${name.value}
 Email: ${email.value}
@@ -1021,11 +1014,9 @@ ${message.value}`;
             }
         }
         
-        // Tornar as funções globais
         window.sendWhatsAppMessage = sendWhatsAppMessage;
         window.sendEmailMessage = sendEmailMessage;
         
-        // Log para debug
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Seção de contato carregada - funções disponíveis');
         });
