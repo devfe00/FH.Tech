@@ -1219,5 +1219,116 @@ if (typeof module !== 'undefined' && module.exports) {
     <div class="cloud cloud2"></div>
     <div class="cloud cloud3"></div>
 </div>
+
+<div class="special-star" id="specialStar"></div>
+<div class="fake-star" id="fakeStar1"></div>
+<div class="fake-star" id="fakeStar2"></div>
+<div class="fake-star" id="fakeStar3"></div>
+<div class="fake-star" id="fakeStar4"></div>
+<div class="fake-star" id="fakeStar5"></div>
+
+<div class="romantic-modal" id="romanticModal">
+    <div class="floating-hearts-bg" id="floatingHearts"></div>
+    <div class="modal-content">
+        <div class="close-modal" id="closeModal">×</div>
+        
+        <div class="photo-container">
+            <img src="public/je&fe.jpg" alt="Nós ❤️">
+        </div>
+        
+        <div class="romantic-message">
+            <h2>meu bem, apoiadora do lula❤️</h2>
+            <p>cada linha de código que escrevo,</p>
+            <p>cada projeto que crio,</p>
+            <p>tudo é mais especial</p>
+            <p>sabendo que você está ao meu lado.</p>
+            <p><strong>eu te amo muito💕</strong></p>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    function initRomanticEasterEgg() {
+        const specialStar = document.getElementById('specialStar');
+        const modal = document.getElementById('romanticModal');
+        const closeBtn = document.getElementById('closeModal');
+        const floatingHeartsContainer = document.getElementById('floatingHearts');
+        
+        if (!specialStar || !modal || !closeBtn) {
+            console.warn('Elementos do easter egg não encontrados');
+            return;
+        }
+        
+        // Abrir modal ao clicar na estrela
+        specialStar.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            createFloatingHearts();
+        });
+        
+        // Fechar modal
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        });
+        
+        // Fechar ao clicar fora do conteúdo
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Fechar com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            if (floatingHeartsContainer) {
+                floatingHeartsContainer.innerHTML = '';
+            }
+        }
+        
+        // Criar corações flutuantes no fundo do modal
+        function createFloatingHearts() {
+            if (!floatingHeartsContainer) return;
+            
+            floatingHeartsContainer.innerHTML = '';
+            const hearts = ['❤️', '💕', '💖', '💗', '💝', '💞'];
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-particle';
+                    heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDelay = Math.random() * 2 + 's';
+                    heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                    floatingHeartsContainer.appendChild(heart);
+                }, i * 200);
+            }
+        }
+    }
+    
+    // Inicializar quando o DOM estiver pronto
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRomanticEasterEgg);
+    } else {
+        initRomanticEasterEgg();
+    }
+})();
+</script>
+
 </body>
 </html>
