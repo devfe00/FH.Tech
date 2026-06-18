@@ -8,10 +8,6 @@
     --background-secondary: #1a1a2e;
     --card-background: rgba(255, 255, 255, 0.1);
     --border-color: rgba(255, 255, 255, 0.2);
-    --really-green: oklch(88.14% 0.203 158.82);
-    --green: oklch(78.59% 0.18 159.1);
-    --black: oklch(22.21% 0 0);
-    --gray: oklch(83.9% 0 0);
     --speed: 1200ms;
 }
 
@@ -41,7 +37,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
 }
 
@@ -51,12 +47,11 @@ body {
     padding: 0 20px;
 }
 
-*[letter-animation="breath"] {
-    & > span {
-        display: inline-block;
-        white-space: break-spaces;
-        animation: breath calc(var(--speed)) ease calc(var(--index) * 100 * 1ms) infinite alternate;
-    }
+/* Animação letra a letra do título (respeita prefers-reduced-motion via JS) */
+*[letter-animation="breath"] > span {
+    display: inline-block;
+    white-space: break-spaces;
+    animation: breath var(--speed) ease calc(var(--index) * 100 * 1ms) infinite alternate;
 }
 
 @keyframes breath {
@@ -64,12 +59,13 @@ body {
         animation-timing-function: ease-out;
     }
     to {
-        transform: scale(1.25) translateY(-5px) perspective(1px);
-        text-shadow: 0 0 20px var(--really-green);
+        transform: scale(1.2) translateY(-4px);
+        text-shadow: 0 0 20px var(--primary-color);
         animation-timing-function: ease-in-out;
     }
 }
 
+/* Fundo: degradê + estrelado sutil, 100% CSS (sem divs geradas via JS) */
 .background-animation {
     position: fixed;
     top: 0;
@@ -92,7 +88,7 @@ body:not(.light-theme) .background-animation::before {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
         radial-gradient(circle at 25% 25%, #4095ff 2px, transparent 2px),
         radial-gradient(circle at 75% 75%, #00d4ff 1px, transparent 1px),
         radial-gradient(circle at 50% 50%, #ff6b6b 1.5px, transparent 1.5px);
@@ -105,17 +101,18 @@ body:not(.light-theme) .background-animation::after {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 10% 20%, #ff6b6b 8px, transparent 8px),
-        radial-gradient(circle at 90% 80%, #ffa500 6px, transparent 6px),
-        radial-gradient(circle at 30% 90%, #00ff00 4px, transparent 4px),
-        radial-gradient(circle at 70% 10%, #ffff00 7px, transparent 7px),
-        radial-gradient(circle at 50% 60%, #ff1493 5px, transparent 5px);
+    background-image:
+        radial-gradient(circle at 10% 20%, #ff6b6b 6px, transparent 6px),
+        radial-gradient(circle at 90% 80%, #ffa500 5px, transparent 5px),
+        radial-gradient(circle at 30% 90%, #00ff00 3px, transparent 3px),
+        radial-gradient(circle at 70% 10%, #ffff00 5px, transparent 5px),
+        radial-gradient(circle at 50% 60%, #ff1493 4px, transparent 4px);
     background-size: 800px 800px, 600px 600px, 900px 900px, 700px 700px, 500px 500px;
+    opacity: 0.5;
     animation: planets 30s infinite linear;
 }
 
-/*TEMA CLARO */
+/* Tema claro */
 body.light-theme .background-animation {
     background: linear-gradient(125deg, #e3f2fd 0%, #bbdefb 28%, #90caf9 80%, #64b5f6 100%);
 }
@@ -131,167 +128,66 @@ body.light-theme .background-animation {
     100% { transform: translateX(100px); }
 }
 
-/*eSTRELAS E METEOROS */
-.stars-container {
+@media (prefers-reduced-motion: reduce) {
+    body:not(.light-theme) .background-animation::before,
+    body:not(.light-theme) .background-animation::after {
+        animation: none;
+    }
+}
+
+/* Meteoros (só no tema escuro) — estático em CSS, sem JS */
+.meteor-field {
     position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: 0;
-    pointer-events: none;
+    inset: 0;
     overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
 }
 
-.star {
-    position: absolute;
-    background-color: white;
-    border-radius: 50%;
-    opacity: 0;
-    animation: twinkle var(--duration) infinite ease-in-out;
-    animation-delay: var(--delay);
-}
-
-.star.small {
-    width: 0.1vw;
-    height: 0.1vw;
-}
-
-.star.medium {
-    width: 0.2vw;
-    height: 0.2vw;
-}
-
-.star.large {
-    width: 0.3vw;
-    height: 0.3vw;
+body.light-theme .meteor-field {
+    display: none;
 }
 
 .meteor {
     position: absolute;
-    width: 0.15vw;
-    height: 0.15vw;
-    background-color: white;
+    width: 2px;
+    height: 2px;
+    background: white;
     border-radius: 50%;
-    box-shadow: 0 0 0.5vw 0.05vw white, 0 0 1vw 0.1vw rgba(255, 255, 255, 0.6);
-    transform: rotate(-45deg);
+    box-shadow: 0 0 6px 1px white, 0 0 14px 2px rgba(255, 255, 255, 0.5);
     opacity: 0;
+    animation: meteorFall linear infinite;
 }
 
 .meteor::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    width: 5vw;
-    height: 0.05vw;
-    background: linear-gradient(to right, white, transparent);
-    transform-origin: left center;
+    right: 0;
+    width: 90px;
+    height: 1px;
+    background: linear-gradient(to left, white, transparent);
 }
 
-@keyframes twinkle {
-    0%, 100% {
-        opacity: 0.1;
-        transform: scale(0.8);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
+@keyframes meteorFall {
+    0% { opacity: 0; transform: translate(0, 0) rotate(-45deg); }
+    4% { opacity: 1; }
+    18% { opacity: 1; }
+    24% { opacity: 0; transform: translate(-320px, 320px) rotate(-45deg); }
+    100% { opacity: 0; }
 }
 
-@keyframes meteor {
-    0% {
-        opacity: 0;
-        transform: translateX(0) translateY(0) rotate(-45deg);
-    }
-    10% {
-        opacity: 1;
-    }
-    80% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(-50vw) translateY(50vh) rotate(-45deg);
-    }
+.meteor:nth-child(1) { top: 5%;  left: 70%; animation-duration: 7s; animation-delay: 0s; }
+.meteor:nth-child(2) { top: 15%; left: 35%; animation-duration: 9s; animation-delay: 2.5s; }
+.meteor:nth-child(3) { top: 0%;  left: 88%; animation-duration: 8s; animation-delay: 5s; }
+.meteor:nth-child(4) { top: 22%; left: 12%; animation-duration: 10s; animation-delay: 1.5s; }
+.meteor:nth-child(5) { top: 8%;  left: 55%; animation-duration: 6.5s; animation-delay: 3.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .meteor { animation: none; opacity: 0; }
 }
 
-@keyframes letterFade {
-    from { 
-        opacity: 0; 
-        transform: translateY(10px); 
-    }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
-}
-
-.fade-in span {
-    display: inline-block;
-    opacity: 0;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-    .star.small {
-        width: 0.15vw;
-        height: 0.15vw;
-    }
-    
-    .star.medium {
-        width: 0.25vw;
-        height: 0.25vw;
-    }
-    
-    .star.large {
-        width: 0.35vw;
-        height: 0.35vw;
-    }
-}
-
-@media (max-width: 767px) {
-    .stars-container {
-        opacity: 0.6; 
-    }
-    
-    .star {
-        width: 0.2vw;
-        height: 0.2vw;
-    }
-    
-    .meteor {
-        width: 0.1vw;
-        height: 0.1vw;
-        box-shadow: 0 0 0.4vw 0.05vw white, 0 0 0.8vw 0.1vw rgba(255, 255, 255, 0.5);
-    }
-    
-    .meteor::before {
-        width: 4vw;
-        height: 0.05vw;
-    }
-}
-
-@media (max-width: 479px) {
-    .stars-container {
-        opacity: 0.4; 
-    }
-    
-    .star {
-        width: 0.15vw;
-        height: 0.15vw;
-    }
-    
-    .meteor {
-        width: 0.08vw;
-        height: 0.08vw;
-    }
-    
-    .meteor::before {
-        width: 3vw;
-    }
-}
-
+/* Texto animado do subtítulo (efeito digitação) */
 .text-animation-container {
     display: inline-flex;
     align-items: center;
@@ -312,9 +208,13 @@ body.light-theme .background-animation {
 #textHacker {
     min-width: 200px;
     display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-/*SOL E NUVENS*/
+/* Sol e nuvens (tema claro) */
 body.light-theme .sun {
     position: fixed;
     top: 50px;
@@ -326,18 +226,6 @@ body.light-theme .sun {
     box-shadow: 0 0 30px rgba(255, 235, 59, 0.8);
     z-index: -2;
     animation: sunGlow 3s ease-in-out infinite alternate;
-}
-
-body.light-theme .sun::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: -20px;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(255, 235, 59, 0.3) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: sunRotate 20s linear infinite;
 }
 
 body.light-theme .clouds-container {
@@ -430,369 +318,21 @@ body.light-theme .cloud3::after {
 }
 
 @keyframes sunGlow {
-    from {
-        box-shadow: 0 0 30px rgba(255, 235, 59, 0.8);
-    }
-    to {
-        box-shadow: 0 0 50px rgba(255, 235, 59, 1);
-    }
-}
-
-@keyframes sunRotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { box-shadow: 0 0 30px rgba(255, 235, 59, 0.8); }
+    to { box-shadow: 0 0 50px rgba(255, 235, 59, 1); }
 }
 
 @keyframes moveCloud1 {
-    from {
-        left: -120px;
-    }
-    to {
-        left: 100vw;
-    }
+    from { left: -120px; }
+    to { left: 100vw; }
 }
 
 @keyframes moveCloud2 {
-    from {
-        left: -100px;
-    }
-    to {
-        left: 100vw;
-    }
+    from { left: -100px; }
+    to { left: 100vw; }
 }
 
 @keyframes moveCloud3 {
-    from {
-        left: -140px;
-    }
-    to {
-        left: 100vw;
-    }
+    from { left: -140px; }
+    to { left: 100vw; }
 }
-
-.special-star {
-position: fixed;
-    width: 18px;
-    height: 18px;
-    z-index: 9999;
-    cursor: pointer;
-    pointer-events: auto;
-    animation: orbitSpecial 40s linear infinite;  
-}
-
-.special-star::before {
-    content: '⭐';
-    font-size: 18px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: rotate 15s linear infinite;
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
-}
-
-.fake-star {
-    position: fixed;
-    width: 15px;
-    height: 15px;
-    z-index: 100;
-    pointer-events: none; 
-}
-
-.fake-star::before {
-    content: '⭐';
-    font-size: 15px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: rotate 12s linear infinite;
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.3));
-}
-
-@keyframes orbitSpecial {
-    0% {
-        top: 15%;
-        left: 90%;
-    }
-    25% {
-        top: 50%;
-        left: 95%;
-    }
-    50% {
-        top: 80%;
-        left: 50%;
-    }
-    75% {
-        top: 50%;
-        left: 5%;
-    }
-    100% {
-        top: 15%;
-        left: 90%;
-    }
-}
-
-#fakeStar1 { animation: orbit1 35s linear infinite; }
-#fakeStar2 { animation: orbit2 45s linear infinite; }
-#fakeStar3 { animation: orbit3 38s linear infinite; }
-#fakeStar4 { animation: orbit4 42s linear infinite; }
-#fakeStar5 { animation: orbit5 50s linear infinite; }
-
-@keyframes orbit1 {
-    0% { top: 20%; left: 10%; }
-    25% { top: 60%; left: 20%; }
-    50% { top: 70%; left: 80%; }
-    75% { top: 30%; left: 90%; }
-    100% { top: 20%; left: 10%; }
-}
-
-@keyframes orbit2 {
-    0% { top: 40%; left: 80%; }
-    25% { top: 20%; left: 40%; }
-    50% { top: 60%; left: 10%; }
-    75% { top: 80%; left: 60%; }
-    100% { top: 40%; left: 80%; }
-}
-
-@keyframes orbit3 {
-    0% { top: 70%; left: 20%; }
-    25% { top: 40%; left: 70%; }
-    50% { top: 10%; left: 80%; }
-    75% { top: 50%; left: 30%; }
-    100% { top: 70%; left: 20%; }
-}
-
-@keyframes orbit4 {
-    0% { top: 30%; left: 50%; }
-    25% { top: 70%; left: 70%; }
-    50% { top: 80%; left: 30%; }
-    75% { top: 20%; left: 20%; }
-    100% { top: 30%; left: 50%; }
-}
-
-@keyframes orbit5 {
-    0% { top: 50%; left: 90%; }
-    25% { top: 80%; left: 50%; }
-    50% { top: 40%; left: 15%; }
-    75% { top: 15%; left: 60%; }
-    100% { top: 50%; left: 90%; }
-}
-
-@keyframes rotate {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-@keyframes rotate {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-/* Modal romântico - CORRIGIDO */
-.romantic-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 99999;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 0.5s ease;
-}
-
-.romantic-modal.active {
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.romantic-modal .modal-content {
- background: rgba(30, 30, 50, 0.85); 
-    backdrop-filter: blur(20px);
-    padding: 30px;
-    border-radius: 25px;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.5s ease;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.romantic-modal .close-modal {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 35px;
-    color: white;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.2);
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    line-height: 1;
-    z-index: 100000;
-}
-
-.romantic-modal .close-modal:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
-
-.romantic-modal .photo-container {
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto 25px;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border: 4px solid rgba(255, 255, 255, 0.3);
-}
-
-.romantic-modal .photo-container img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.romantic-modal .romantic-message {
-    color: white;
-    font-family: 'Inter', sans-serif;
-    line-height: 1.8;
-}
-
-.romantic-modal .romantic-message h2 {
-    font-size: 2em;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    animation: heartBeat 1.5s infinite;
-}
-
-@keyframes heartBeat {
-    0%, 100% { transform: scale(1); }
-    10%, 30% { transform: scale(1.1); }
-    20% { transform: scale(0.9); }
-}
-
-.romantic-modal .romantic-message p {
-    font-size: 1.1em;
-    margin-bottom: 12px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.romantic-modal .romantic-message strong {
-    font-size: 1.3em;
-    color: #ffeb3b;
-}
-
-.romantic-modal .floating-hearts-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 0;
-}
-
-.romantic-modal .modal-content {
-    z-index: 1;
-}
-
-.heart-particle {
-    position: absolute;
-    font-size: 20px;
-    opacity: 0;
-    animation: floatHeart 4s ease-in infinite;
-}
-
-@keyframes floatHeart {
-    0% {
-        bottom: -10%;
-        opacity: 0;
-        transform: translateX(0) scale(0.5);
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        bottom: 110%;
-        opacity: 0;
-        transform: translateX(20px) scale(1);
-    }
-}
-
-@media (max-width: 768px) {
-    .special-star {
-        top: 120px;
-        right: 20px;
-        width: 18px;
-        height: 35px;
-    }
-    
-    .special-star::before {
-        font-size: 18px;
-    }
-    
-    .romantic-modal .modal-content {
-        padding: 25px 20px;
-        width: 95%;
-    }
-    
-    .romantic-modal .romantic-message h2 {
-        font-size: 1.6em;
-    }
-    
-    .romantic-modal .romantic-message p {
-        font-size: 1em;
-    }
-    
-    .romantic-modal .photo-container {
-        max-width: 280px;
-        margin-bottom: 20px;
-    }
-    
-    .romantic-modal .close-modal {
-        width: 40px;
-        height: 40px;
-        font-size: 30px;
-    }
-}
-
