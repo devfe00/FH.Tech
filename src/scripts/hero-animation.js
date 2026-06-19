@@ -1,5 +1,8 @@
-// Animação do título (letra a letra) e do subtítulo (efeito de digitação)
-document.addEventListener('DOMContentLoaded', () => {
+function onReady(fn) {
+    if (document.readyState !== 'loading') { fn(); }
+    else { document.addEventListener('DOMContentLoaded', fn); }
+}
+onReady(function () {
     initLetterAnimation();
     initTypewriter();
 });
@@ -29,8 +32,12 @@ function initTypewriter() {
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
+    let timeoutId = null;
+    let isVisible = true;
 
     function type() {
+        if (!isVisible) return; 
+
         const currentWord = words[wordIndex];
 
         hackerText.textContent = isDeleting
@@ -50,8 +57,28 @@ function initTypewriter() {
             speed = 500;
         }
 
-        setTimeout(type, speed);
+        timeoutId = setTimeout(type, speed);
     }
 
-    setTimeout(type, 300);
+    const heroSection = document.getElementById('home');
+    if (heroSection && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        isVisible = true;
+                        type(); 
+                    } else {
+                        isVisible = false;
+                        clearTimeout(timeoutId); 
+                    }
+                });
+            },
+            { threshold: 0.1 } 
+        );
+        observer.observe(heroSection);
+    }
+
+    // Inicia normalmente
+    timeoutId = setTimeout(type, 300);
 }

@@ -59,7 +59,7 @@
 
     .project-card {
         flex: 0 0 78%;
-        height: 400px;
+        min-height: 400px;
     }
 
     .carousel-nav {
@@ -93,7 +93,7 @@
 
     .project-card {
         flex: 0 0 86%;
-        height: 380px;
+        min-height: 380px;
     }
 
     .carousel-nav {

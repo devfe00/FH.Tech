@@ -32,3 +32,15 @@ function closeMenu() {
 window.toggleTheme = toggleTheme;
 window.toggleMenu = toggleMenu;
 window.closeMenu = closeMenu;
+
+function bindEvents() {
+    var themeBtn = document.querySelector('.theme-toggle');
+    var menuBtn = document.querySelector('.menu-toggle');
+    if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+    if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
+    document.querySelectorAll('#mobileMenu a').forEach(function (link) {
+        link.addEventListener('click', closeMenu);
+    });
+}
+if (document.readyState !== 'loading') { bindEvents(); }
+else { document.addEventListener('DOMContentLoaded', bindEvents); }
