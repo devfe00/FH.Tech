@@ -349,3 +349,19 @@ html {
 .contact-item a:hover {
     text-decoration: underline;
 }
+/* Centralizar destaques do "Sobre" no Mobile */
+@media (max-width: 768px) {
+    .about-highlights {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .highlight-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
