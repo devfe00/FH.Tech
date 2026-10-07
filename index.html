@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FH Tech - Soluções Tecnológicas</title>
+    <title>FH Technology - Soluções</title>
     <meta name="description" content="FH Tech - Prestação de serviços em tecnologia, desenvolvimento web e mobile">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,25 +13,17 @@
     <link rel="stylesheet" href="src/styles/responsive.css">
 </head>
 <body>
-    <div class="background-animation"></div>
-<div class="meteor-field">
-    <div class="meteor"></div>
-    <div class="meteor"></div>
-    <div class="meteor"></div>
-    <div class="meteor"></div>
-    <div class="meteor"></div>
-</div>
+    <div class="background-animation">
+        <canvas id="globeCanvas" style="width:100%;height:100%;display:block;"></canvas>
+    </div>
 
     <header class="header">
         <div class="logo">
             <img src="public/logo.png" alt="FH Tech Logo" class="logo-img">
-            <span class="logo-text">FH.Tech</span>
+            <span class="logo-text">FH Technology</span>
         </div>
 
         <nav class="nav">
-            <div class="theme-toggle" role="button" aria-label="Alternar tema">
-                <i class="fas fa-sun theme-icon" id="themeIcon"></i>
-            </div>
             <div class="menu-toggle" role="button" aria-label="Abrir menu">
                 <div class="hamburger">
                     <span></span>
@@ -54,7 +46,7 @@
         <section id="home" class="hero">
             <div class="container">
                 <div class="hero-content">
-                    <h1 class="hero-title" split-by="letter" letter-animation="breath">FH.Tech</h1>
+                    <h1 class="hero-title" split-by="letter" letter-animation="breath">FH Technology</h1>
                     <h2 class="hero-subtitle">
                         <div class="text-animation-container">
                             <span>Somos&nbsp;</span>
@@ -267,10 +259,20 @@
         <section id="projects" class="projects">
             <div class="container">
                 <h2 class="section-title">Alguns de Nossos Projetos</h2>
+
+                <div class="carousel-tabs">
+                    <button class="carousel-tab active" data-category="ecommerce">E-commerces & Lojas</button>
+                    <button class="carousel-tab" data-category="delivery">Delivery & Restaurantes</button>
+                    <button class="carousel-tab" data-category="saas">Softwares & SaaS</button>
+                    <button class="carousel-tab" data-category="agendamento">Agendamentos & Serviços</button>
+                    <button class="carousel-tab" data-category="institucional">Institucionais</button>
+                    <button class="carousel-tab" data-category="landing">Landing Pages</button>
+                </div>
+
                 <div class="projects-carousel">
                     <div class="carousel-container" id="projectsCarousel">
 
-                        <div class="project-card" onclick="window.open('https://eurovillebmw.com.br/bmw', '_blank')">
+                        <div class="project-card" data-category="agendamento" onclick="window.open('https://eurovillebmw.com.br/bmw', '_blank')">
                             <div class="project-image">
                                 <img src="public/bmw.jpg" alt="Euroville - BMW">
                             </div>
@@ -285,7 +287,7 @@
                             </div>
                         </div>
 
-                         <div class="project-card" onclick="window.open('https://www.urbandress.com.br', '_blank')">
+                         <div class="project-card" data-category="ecommerce" onclick="window.open('https://www.urbandress.com.br', '_blank')">
     <div class="project-image">
         <img src="public/urban.png" alt="Urban Dress">
     </div>
@@ -299,7 +301,7 @@
         </div>
     </div>
 </div>
-<div class="project-card" onclick="window.open('https://fullsound-garage.vercel.app', '_blank')">
+<div class="project-card" data-category="agendamento" onclick="window.open('https://fullsound-garage.vercel.app', '_blank')">
     <div class="project-image">
         <img src="public/carro.jpeg" alt="Full Sound Garage">
     </div>
@@ -313,7 +315,7 @@
         </div>
     </div>
 </div>
-                        <div class="project-card" onclick="window.open('https://www.instagram.com/peregrinosoutdoor/', '_blank')">
+                        <div class="project-card" data-category="ecommerce" onclick="window.open('https://www.instagram.com/peregrinosoutdoor/', '_blank')">
                             <div class="project-image">
                                 <img src="public/dev.png" alt="E-commerce - Peregrinos">
                             </div>
@@ -326,7 +328,7 @@
                             </div>
                         </div>
 
-                        <div class="project-card" onclick="window.open('https://missmisses.com.br', '_blank')">
+                        <div class="project-card" data-category="ecommerce" onclick="window.open('https://missmisses.com.br', '_blank')">
     <div class="project-image">
         <img src="public/miss.png" alt="Miss Misses">
     </div>
@@ -341,7 +343,7 @@
     </div>
 </div>
 
-                        <div class="project-card" onclick="window.open('https://cumbucaboa.com.br', '_blank')">
+                        <div class="project-card" data-category="delivery" onclick="window.open('https://cumbucaboa.com.br', '_blank')">
                             <div class="project-image">
                                 <img src="public/comida.jpg" alt="Delivery">
                             </div>
@@ -354,7 +356,7 @@
                             </div>
                         </div>
 
-                        <div class="project-card" onclick="window.open('https://modalibaby.com.br/', '_blank')">
+                        <div class="project-card" data-category="ecommerce" onclick="window.open('https://modalibaby.com.br/', '_blank')">
     <div class="project-image">
         <img src="public/moda.png" alt="Modali Baby">
     </div>
@@ -369,7 +371,7 @@
     </div>
 </div>
 
-                        <div class="project-card" onclick="window.open('https://ajudae.co', '_blank')">
+                        <div class="project-card" data-category="saas" onclick="window.open('https://ajudae.co', '_blank')">
     <div class="project-image">
         <img src="public/ajudae.jpg" alt="Ajudaê">
     </div>
@@ -384,7 +386,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://basicamente.com/', '_blank')">
+<div class="project-card" data-category="ecommerce" onclick="window.open('https://basicamente.com/', '_blank')">
     <div class="project-image">
         <img src="public/basic.jpeg" alt="Malwee">
     </div>
@@ -399,7 +401,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://donut-menu.vercel.app', '_blank')">
+<div class="project-card" data-category="delivery" onclick="window.open('https://donut-menu.vercel.app', '_blank')">
     <div class="project-image">
         <img src="public/donuts.jpg" alt="Donuts">
     </div>
@@ -414,7 +416,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://www.eyeshop.com.br', '_blank')">
+<div class="project-card" data-category="ecommerce" onclick="window.open('https://www.eyeshop.com.br', '_blank')">
     <div class="project-image">
         <img src="public/eye.png" alt="Donuts">
     </div>
@@ -430,7 +432,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://pacecompany.com.br', '_blank')">
+<div class="project-card" data-category="saas" onclick="window.open('https://pacecompany.com.br', '_blank')">
     <div class="project-image">
         <img src="public/pacecompany.png" alt="Pace Company">
     </div>
@@ -445,7 +447,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://biztrivo.com.br', '_blank')">
+<div class="project-card" data-category="saas" onclick="window.open('https://biztrivo.com.br', '_blank')">
     <div class="project-image">
         <img src="public/biztrivo.jpg" alt="Biztrivo">
     </div>
@@ -460,7 +462,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://adega-kelly.vercel.app', '_blank')">
+<div class="project-card" data-category="delivery" onclick="window.open('https://adega-kelly.vercel.app', '_blank')">
     <div class="project-image">
         <img src="public/loja.png" alt="Adega">
     </div>
@@ -475,7 +477,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://brazelettrica.com.br', '_blank')">
+<div class="project-card" data-category="delivery" onclick="window.open('https://brazelettrica.com.br', '_blank')">
     <div class="project-image">
         <img src="public/res.png" alt="Bráz Elettrica">
     </div>
@@ -492,7 +494,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://donuts-brilhantes.vercel.app', '_blank')">
+<div class="project-card" data-category="delivery" onclick="window.open('https://donuts-brilhantes.vercel.app', '_blank')">
     <div class="project-image">
         <img src="public/donuts.jpg" alt="Donuts">
     </div>
@@ -507,7 +509,7 @@
     </div>
 </div>
 
-<div class="project-card" onclick="window.open('https://casadosaulo.com.br', '_blank')">
+<div class="project-card" data-category="institucional" onclick="window.open('https://casadosaulo.com.br', '_blank')">
     <div class="project-image">
         <img src="public/saulo.png" alt="Casa do Saulo">
     </div>
@@ -524,7 +526,7 @@
         </div>
     </div>
 </div>
-<div class="project-card" onclick="window.open('https://torrearantes-pizzaria.vercel.app', '_blank')">
+<div class="project-card" data-category="delivery" onclick="window.open('https://torrearantes-pizzaria.vercel.app', '_blank')">
     <div class="project-image">
         <img src="public/logo-torre-arantes.jpg" alt="Torre Arantes - Pizzaria">
     </div>
@@ -540,8 +542,38 @@ Plataforma digital para pizzaria com cardápio interativo, navegação rápida p
         </div>
     </div>
 </div>
+                        <div class="project-card" data-category="saas" onclick="window.open('https://ideal-jairo.vercel.app/agendar', '_blank')">
+                            <div class="project-image">
+                                <img src="public/jairo.jpeg" alt="Ideal Jairo">
+                            </div>
+                            <div class="project-info">
+                                <h3>Ideal Jairo</h3>
+                                <p>Software corporativo completo para gestão de carros, funcionários, agendamentos, financeiro, ordens de serviço e orçamentos.</p>
+                                <div class="project-tech">
+                                    <span class="tech-tag">Gestão Corporativa</span>
+                                    <span class="tech-tag">Financeiro</span>
+                                    <span class="tech-tag">Ordens de Serviço</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="project-card" data-category="landing" onclick="window.open('https://peregrinos-quiz.vercel.app/', '_blank')">
+                            <div class="project-image">
+                                <img src="public/dev.png" alt="Peregrinos Quiz">
+                            </div>
+                            <div class="project-info">
+                                <h3>Peregrinos - Quiz</h3>
+                                <p>Landing page com quiz interativo focada em conversão para a marca Peregrinos Outdoor.</p>
+                                <div class="project-tech">
+                                    <span class="tech-tag">Landing Page</span>
+                                    <span class="tech-tag">Quiz Interativo</span>
+                                    <span class="tech-tag">Conversão</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!--
-                             adicionar um novo projeto
+                             adicionar novo projeto
                         -->
 
                     </div>
@@ -661,13 +693,7 @@ Plataforma digital para pizzaria com cardápio interativo, navegação rápida p
         <p>Developed by <span class="trademark">®FH Tech</span></p>
     </footer>
 
-    <div class="sun"></div>
-    <div class="clouds-container">
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-    </div>
-
+    <script src="src/scripts/globe-bg.js" defer></script>
     <script src="src/scripts/theme-menu.js" defer></script>
     <script src="src/scripts/hero-animation.js" defer></script>
     <script src="src/scripts/carousel.js" defer></script>

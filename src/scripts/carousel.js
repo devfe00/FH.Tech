@@ -1,31 +1,55 @@
-// Carrossel de projetos — baseado em scroll nativo com snap.
-// Funciona com qualquer quantidade de .project-card, sem precisar
-// recalcular percentuais manualmente ao adicionar/remover projetos.
 document.addEventListener('DOMContentLoaded', initCarousel);
 
 function initCarousel() {
     const track = document.getElementById('projectsCarousel');
     const indicatorsWrap = document.getElementById('carouselIndicators');
+    const tabs = document.querySelectorAll('.carousel-tab');
     if (!track || !indicatorsWrap) return;
 
-    const cards = Array.from(track.querySelectorAll('.project-card'));
-    if (cards.length === 0) return;
+    const allCards = Array.from(track.querySelectorAll('.project-card'));
+    if (allCards.length === 0) return;
 
-    // Gera os indicadores dinamicamente (um por card)
-    indicatorsWrap.innerHTML = '';
-    cards.forEach((_, index) => {
-        const dot = document.createElement('button');
-        dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
-        dot.setAttribute('aria-label', `Ir para o projeto ${index + 1}`);
-        dot.addEventListener('click', () => scrollToCard(track, cards, index));
-        indicatorsWrap.appendChild(dot);
-    });
+    let activeCategory = 'ecommerce';
 
-    const updateActiveDot = () => {
+    function filterCards(category) {
+        activeCategory = category;
+        allCards.forEach(card => {
+            card.style.display = card.dataset.category === category ? '' : 'none';
+        });
+        buildIndicators();
+        track.scrollTo({ left: 0, behavior: 'instant' });
+    }
+
+    function visibleCards() {
+        return allCards.filter(c => c.dataset.category === activeCategory);
+    }
+
+    function buildIndicators() {
+        const cards = visibleCards();
+        indicatorsWrap.innerHTML = '';
+        cards.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', `Projeto ${index + 1}`);
+            dot.addEventListener('click', () => scrollToCard(track, cards, index));
+            indicatorsWrap.appendChild(dot);
+        });
+    }
+
+    function updateActiveDot() {
+        const cards = visibleCards();
         const dots = indicatorsWrap.querySelectorAll('.carousel-dot');
         const activeIndex = getClosestCardIndex(track, cards);
         dots.forEach((dot, i) => dot.classList.toggle('active', i === activeIndex));
-    };
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            filterCards(tab.dataset.category);
+        });
+    });
 
     let scrollTimeout;
     track.addEventListener('scroll', () => {
@@ -34,11 +58,13 @@ function initCarousel() {
     });
 
     const goPrev = () => {
+        const cards = visibleCards();
         const current = getClosestCardIndex(track, cards);
         scrollToCard(track, cards, Math.max(current - 1, 0));
     };
 
     const goNext = () => {
+        const cards = visibleCards();
         const current = getClosestCardIndex(track, cards);
         scrollToCard(track, cards, Math.min(current + 1, cards.length - 1));
     };
@@ -47,16 +73,16 @@ function initCarousel() {
     carousel?.querySelector('.carousel-prev')?.addEventListener('click', goPrev);
     carousel?.querySelector('.carousel-next')?.addEventListener('click', goNext);
 
-    // Mantidos também no window, caso queira chamar via onclick no HTML
     window.previousProject = goPrev;
     window.nextProject = goNext;
+
+    filterCards('ecommerce');
 }
 
 function getClosestCardIndex(track, cards) {
     const trackCenter = track.scrollLeft + track.clientWidth / 2;
     let closestIndex = 0;
     let closestDistance = Infinity;
-
     cards.forEach((card, index) => {
         const cardCenter = card.offsetLeft + card.offsetWidth / 2;
         const distance = Math.abs(cardCenter - trackCenter);
@@ -65,7 +91,6 @@ function getClosestCardIndex(track, cards) {
             closestIndex = index;
         }
     });
-
     return closestIndex;
 }
 

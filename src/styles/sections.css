@@ -228,11 +228,37 @@ section {
     border-radius: 15px;
 }
 
-/* ===== Projetos / Carrossel =====
-   Único bloco de regras (antes havia 2 definições conflitantes
-   neste arquivo + uma terceira em responsive.css, o que descalibrava
-   o cálculo de posição ao navegar). Modelo atual: scroll-snap nativo,
-   não depende de saber quantos cards existem. */
+.carousel-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 36px;
+}
+
+.carousel-tab {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.carousel-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.carousel-tab.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
 .projects {
     background: transparent;
     padding: 100px 0;
