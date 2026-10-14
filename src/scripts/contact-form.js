@@ -36,7 +36,7 @@ Email: ${data.email}
 Telefone: ${data.phone}
 Mensagem: ${data.message}`;
 
-    window.open(`https://wa.me/5511956795412?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/5511998904169?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 function sendEmailMessage() {

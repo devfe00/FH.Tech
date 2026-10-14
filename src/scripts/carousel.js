@@ -14,14 +14,14 @@ function initCarousel() {
     function filterCards(category) {
         activeCategory = category;
         allCards.forEach(card => {
-            card.style.display = card.dataset.category === category ? '' : 'none';
+            card.style.display = card.dataset.category.split(' ').includes(category) ? '' : 'none';
         });
         buildIndicators();
         track.scrollTo({ left: 0, behavior: 'instant' });
     }
 
     function visibleCards() {
-        return allCards.filter(c => c.dataset.category === activeCategory);
+        return allCards.filter(c => c.dataset.category.split(' ').includes(activeCategory));
     }
 
     function buildIndicators() {
