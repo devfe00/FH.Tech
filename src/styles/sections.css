@@ -639,3 +639,174 @@ body.light-theme footer .trademark {
     vertical-align: middle;
     flex-shrink: 0;
 }
+
+/* ===== FH FOODS ===== */
+.fhfoods-section {
+    padding: 100px 0;
+    background: linear-gradient(180deg, var(--background-primary) 0%, rgba(255,106,0,0.04) 50%, var(--background-primary) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.fhfoods-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.fhfoods-logo-wrap {
+    margin-bottom: 28px;
+}
+
+.fhfoods-logo {
+    height: 44px;
+    width: auto;
+}
+
+.fhfoods-title {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.fhfoods-highlight {
+    background: linear-gradient(90deg, #ff6a00, #ffb347);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.fhfoods-desc {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 36px;
+    max-width: 480px;
+}
+
+.fhfoods-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 40px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.fhfoods-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.fhfoods-feat-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,106,0,0.12);
+    border: 1px solid rgba(255,106,0,0.25);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.fhfoods-feat-icon i {
+    color: #ff6a00;
+    font-size: 0.85rem;
+}
+
+.fhfoods-feat-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.fhfoods-feat-text strong {
+    display: inline;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.btn-fhfoods {
+    background: linear-gradient(90deg, #ff6a00, #ffb347);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-fhfoods:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* lado direito: frame de browser com screenshot */
+.fhfoods-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fhfoods-screen-wrap {
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,106,0,0.25);
+    box-shadow: 0 24px 64px rgba(255,106,0,0.12), 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.fhfoods-browser-bar {
+    background: rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,106,0,0.15);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fhfoods-browser-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+}
+
+.fhfoods-browser-dot:nth-child(1) { background: #ff5f57; }
+.fhfoods-browser-dot:nth-child(2) { background: #febc2e; }
+.fhfoods-browser-dot:nth-child(3) { background: #28c840; }
+
+.fhfoods-browser-url {
+    margin-left: 10px;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+    font-family: monospace;
+}
+
+.fhfoods-screen {
+    width: 100%;
+    background: #111;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+}
+
+.fhfoods-screenshot {
+    width: 100%;
+    height: auto;
+    display: block;
+}

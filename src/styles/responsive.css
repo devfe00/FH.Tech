@@ -71,6 +71,29 @@
         height: 38px;
         font-size: 0.95rem;
     }
+
+    .fhfoods-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+    }
+
+    .fhfoods-features li {
+        justify-content: center;
+    }
+
+    .fhfoods-desc {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .fhfoods-mockup {
+        width: 280px;
+        height: 280px;
+    }
+
+    .fhfoods-badge--1 { left: 0; }
+    .fhfoods-badge--2 { right: -10px; }
 }
 
 @media (max-width: 480px) {
